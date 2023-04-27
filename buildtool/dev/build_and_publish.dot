@@ -1,0 +1,103 @@
+# http://viz-js.com/
+#
+# Regen locally with `dot -O -Tpng dev/build_and_publish.dot`
+# Or have dot watch file with `dot -Txlib dev/build_and_publish.dot 2>/dev/null &`
+
+digraph Release {
+  labeljust=l
+  style=filled;
+  color=lightgrey;
+  node [style=filled,color=white];
+
+  Approver [shape=Mdiamond,color=black,style=wedged];
+  Approver -> git_tag_release_branch;
+
+  Releaser [shape=Msquare,color=black,style=wedged];
+  Releaser -> git_tag_master_branch;
+
+  cut_release_branches -> build_bom;
+
+  bom_built-> build_changelog;
+  bom_built-> build_apidocs;
+
+  subgraph cluster_2 {
+    label = "Prepare Branches if new {minor}"
+
+      subgraph cluster_6 {
+	    label = "For Each Service..."
+	    style=filled;
+	    color=aquamarine3;
+
+      git_tag_master_branch -> cut_release_branches;
+    }
+  }
+
+  subgraph cluster_5 {
+      label = "Build BOM"
+
+      build_bom -> git_clone_at_branch;
+
+      subgraph cluster_6 {
+	    label = "For Each Service..."
+	    style=filled;
+	    color=aquamarine3;
+
+  		git_clone_at_branch -> get_HEAD_hash;
+  		get_HEAD_hash -> look_backwards_for_SEMVER_tag;
+    }
+    look_backwards_for_SEMVER_tag -> bom_built
+  }
+
+	subgraph cluster_10 {
+    label = "For Each Service..."
+    color=aquamarine3
+    git_tag_release_branch -> github_action_build
+
+    subgraph cluster_15 {
+      label = "GitHub Action Build";
+      color=lightblue;
+
+      github_action_build -> git_clone_from_git_tag_10;
+      git_clone_from_git_tag_10 -> build_publish_jar;
+      build_publish_jar -> build_publish_debian;
+      build_publish_debian -> publish_halyard_profile;
+      publish_halyard_profile -> build_publish_container;
+      build_publish_container -> build_publish_binary;
+      build_publish_binary;
+    }
+  }
+
+	subgraph cluster_40 {
+		label = "Changelog";
+
+		build_changelog -> git_clone_from_BOM_hash_40;
+		subgraph cluster_41 {
+		    label = "For Each Service..."
+		    color=aquamarine3
+
+    		git_clone_from_BOM_hash_40 -> look_backwards_for_prev_BOM_hash;
+    		look_backwards_for_prev_BOM_hash -> collect_commit_messages;
+
+		}
+		collect_commit_messages -> generate_markdown_to_file;
+	}
+	generate_markdown_to_file -> manually_publish_bom;
+
+	subgraph cluster_50 {
+		label = "API Docs - TBC";
+
+		build_apidocs -> git_clone_gate_BOM_hash;
+		git_clone_gate_BOM_hash -> gradle_boot_run;
+		gradle_boot_run -> generate_swagger_docs_to_file;
+		generate_swagger_docs_to_file -> shutdown_gate;
+	}
+	shutdown_gate -> manually_publish_bom;
+
+	subgraph cluster_60 {
+		label = "Publish";
+		color=lightgoldenrod
+
+		manually_publish_bom -> manually_update_hal_versions;
+    manually_update_hal_versions -> manually_publish_changelog;
+	}
+}

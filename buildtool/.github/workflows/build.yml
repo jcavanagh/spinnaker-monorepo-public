@@ -1,0 +1,36 @@
+name: Branch Build
+
+on:
+  push:
+    branches:
+    - master
+    - release-*
+
+jobs:
+  branch-build:
+    # Only run this on repositories in the 'spinnaker' org, not on forks.
+    if: startsWith(github.repository, 'spinnaker/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: Install dependencies with pip
+        run: |
+          pip install -r dev/requirements.txt
+          pip install -r dev/buildtool/requirements.txt
+      - name: Install regctl for container image tagging
+        run: |
+          curl -L https://github.com/regclient/regclient/releases/download/v0.4.5/regctl-linux-amd64 >regctl
+          install --mode 755 regctl /usr/local/bin/
+          regctl version
+      - name: Setup for tests
+        run: |
+          git config --global user.email "sig-platform@spinnaker.io"
+          git config --global user.name "Spinnaker GHA"
+      - run: ./unittest/run_tests.sh
