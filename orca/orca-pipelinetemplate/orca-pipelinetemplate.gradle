@@ -1,5 +1,6 @@
 apply from: "$rootDir/gradle/spock.gradle"
-apply from: "$rootDir/gradle/kotlin.gradle"
+apply from: "$rootDir/../kotlin.gradle"
+apply from: "$rootDir/gradle/detekt.gradle"
 
 dependencies {
   implementation(project(":orca-core"))
@@ -29,5 +30,5 @@ dependencies {
   testImplementation("org.slf4j:slf4j-simple")
   testImplementation("org.spockframework:spock-unitils")
   testImplementation("org.codehaus.groovy:groovy-json")
-  testImplementation("io.spinnaker.fiat:fiat-core:$fiatVersion")
+  testImplementation("io.spinnaker.fiat:fiat-core")
 }
