@@ -143,7 +143,8 @@ class TestRunner(unittest.TestCase):
         if len(candidates) != 1:
             logging.error("Unexpected output\n%s", output)
         self.assertEqual(1, len(candidates))
-        self.assertTrue(candidates[0].find(" python ") > 0)
+        # Apple Silicon Rosetta compatibility - the python executable lives in a different location
+        self.assertTrue(candidates[0].find(" python ") > 0 or candidates[0].find("bin/python ") > 0)
 
 
 if __name__ == "__main__":

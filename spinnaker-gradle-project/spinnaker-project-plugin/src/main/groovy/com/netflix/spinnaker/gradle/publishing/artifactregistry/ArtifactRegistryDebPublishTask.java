@@ -82,6 +82,7 @@ class ArtifactRegistryDebPublishTask extends DefaultTask {
     this.repository = repository;
   }
 
+  @Input
   public Provider<Integer> getAptImportTimeoutSeconds() {
     return aptImportTimeoutSeconds;
   }
@@ -133,7 +134,7 @@ class ArtifactRegistryDebPublishTask extends DefaultTask {
       );
     }
 
-    return new DefaultCredentialProvider().getCredential();
+    return DefaultCredentialProvider.getInstance().getCredential();
   }
 
   /**

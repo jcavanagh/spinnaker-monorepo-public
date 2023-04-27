@@ -389,10 +389,6 @@ internal object SqlStorageServiceTests : JUnit5Minutests {
       jooq.flushAll()
     }
 
-    afterAll {
-      jooq.close()
-    }
-
   }
 
   private fun <T : Timestamped> verifyNewerThan(newerThanResult: Map<String, List<T>>, expectedModifiedIds: Set<String>, expectedDeletedIds: Set<String>): Unit {

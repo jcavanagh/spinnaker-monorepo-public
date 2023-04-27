@@ -1,0 +1,194 @@
+name: JVM Build/Publish
+
+on:
+  workflow_call:
+    inputs:
+      # Build args
+      project:
+        description: Project to build and (optionally) publish
+        type: string
+        required: true
+      gradle-opts:
+        description: Additional Gradle options set via GRADLE_OPTS
+        default: -Dorg.gradle.daemon=false -Xmx2g -Xms2g
+        type: string
+      java-version:
+        description: Java version to install
+        default: '11'
+        type: string
+      java-distribution:
+        description: Java distribution to install (https://github.com/actions/setup-java#supported-distributions)
+        default: zulu
+        type: string
+
+      # Publish args
+      publish:
+        description: Whether or not to publish anything
+        default: 'false'
+        type: string
+      publish-containers:
+        description: If publishing, determines whether to publish containers or not
+        default: 'true'
+        type: string
+      publish-debs:
+        description: If publishing, determines whether to publish debs or not
+        default: 'true'
+        type: string
+      publish-halconfig:
+        description: If publishing, determines whether to publish halconfig or not
+        default: 'true'
+        type: string
+      container-registry:
+        description: Destination container registry
+        default: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
+        type: string
+
+jobs:
+  version:
+    uses: ./.github/workflows/version.yml
+    with:
+      project: ${{ inputs.project }}
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v2
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.java-distribution }}
+          cache: ${{ !env.ACT && 'gradle' || '' }} # Disable Gradle cache when running actions locally
+
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          GRADLE_OPTS: ${{ inputs.gradle-opts }}
+          ORG_GRADLE_PROJECT_version: ${{ env.BUILD_NUMBER }}
+        run: |
+          ./gradlew --stacktrace ':${{ inputs.project }}:build'
+
+  publish-debs:
+    runs-on: ubuntu-latest
+    if: inputs.publish == 'true' && inputs.publish-debs == 'true'
+    needs:
+      - version
+      - build
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v2
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.java-distribution }}
+          cache: ${{ !env.ACT && 'gradle' || '' }} # Disable Gradle cache when running actions locally
+
+      - name: Login to Google Cloud
+        uses: google-github-actions/auth@v0
+        # use service account flow defined at: https://github.com/google-github-actions/upload-cloud-storage#authenticating-via-service-account-key-json
+        with:
+          credentials_json: ${{ secrets.GAR_JSON_KEY }}
+
+      - name: Publish apt packages to Google Artifact Registry
+        env:
+          # If this is a release version, it's a valid deb version e.g. 2023.1.1
+          # If this is a main build, the package name itself is suffixed with -main and the version is the sequential build number
+          ORG_GRADLE_PROJECT_version: ${{ needs.version.outputs.is-release == 'true' && needs.version.outputs.version || needs.version.outputs.build-number }}
+          ORG_GRADLE_PROJECT_artifactRegistryPublishEnabled: true
+          ORG_GRADLE_PROJECT_artifactRegistryPublishAptEnabled: true
+          ORG_GRADLE_PROJECT_artifactRegistryAptProject: spinnaker-monorepo-test
+          ORG_GRADLE_PROJECT_artifactRegistryAptLocation: us-west2
+          ORG_GRADLE_PROJECT_artifactRegistryAptTempGcsBucket: spinnaker-monorepo-test-deb-temp-uploads
+          ORG_GRADLE_PROJECT_ospackageSuffix: ${{ needs.version.outputs.is-release == 'false' && '-dev' || '' }}
+          GAR_JSON_KEY: ${{ secrets.GAR_JSON_KEY }}
+        run: |
+          ./gradlew --info :${{ inputs.project }}:publish
+
+  publish-halconfig:
+    runs-on: ubuntu-latest
+    if: inputs.publish == 'true' && inputs.publish-halconfig == 'true'
+    needs:
+      - version
+      - build
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Login to Google Cloud
+        uses: google-github-actions/auth@v0
+        # use service account flow defined at: https://github.com/google-github-actions/upload-cloud-storage#authenticating-via-service-account-key-json
+        with:
+          credentials_json: ${{ secrets.GAR_JSON_KEY }}
+
+      - name: Upload halconfig profiles to GCS
+        # https://console.cloud.google.com/storage/browser/halconfig
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: ${{ inputs.project }}/halconfig/
+          destination: spinnaker-monorepo-test/halconfig/${{ inputs.project }}/${{ needs.version.outputs.version }}
+          parent: false
+
+  publish-containers:
+    runs-on: ubuntu-latest
+    if: inputs.publish == 'true' && inputs.publish-containers == 'true'
+    needs:
+      - version
+      - build
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v2
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.java-distribution }}
+          cache: ${{ !env.ACT && 'gradle' || '' }} # Disable Gradle cache when running actions locally
+
+      - name: Login to GAR
+        uses: docker/login-action@v2
+        # use service account flow defined at: https://github.com/docker/login-action#service-account-based-authentication-1
+        with:
+          registry: us-west2-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.GAR_JSON_KEY }}
+
+      - name: Build distribution for containerization
+        env:
+          ORG_GRADLE_PROJECT_version: ${{ needs.version.outputs.version }}
+        run: |
+          ./gradlew :${{ inputs.project }}:${{ inputs.project }}-web:installDist
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and publish slim container image
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ inputs.project}}
+          file: ${{ inputs.project}}/Dockerfile.slim
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            "${{ inputs.container-registry }}/${{ inputs.project }}:${{ needs.version.outputs.version }}-unvalidated"
+            "${{ inputs.container-registry }}/${{ inputs.project }}:${{ needs.version.outputs.version }}-unvalidated-slim"
+          labels: |
+            "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
+            "org.opencontainers.image.revision=${{ github.sha }}"
+            "org.opencontainers.image.version=${{ needs.version.outputs.version }}"
+            "io.spinnaker.ci-build=${{ needs.version.outputs.build-url }}"
+
+      - name: Build and publish ubuntu container image
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ inputs.project}}
+          file: ${{ inputs.project}}/Dockerfile.ubuntu
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            "${{ inputs.container-registry }}/${{ inputs.project }}:${{ needs.version.outputs.version }}-unvalidated-ubuntu"
+          labels: |
+            "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
+            "org.opencontainers.image.revision=${{ github.sha }}"
+            "org.opencontainers.image.version=${{ needs.version.outputs.version }}"
+            "io.spinnaker.ci-build=${{ needs.version.outputs.build-url }}"

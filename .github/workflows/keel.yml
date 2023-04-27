@@ -1,0 +1,30 @@
+name: Keel
+run-name: Keel ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'keel/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'keel/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  keel:
+    uses: ./.github/workflows/generic-jvm.yml
+    with:
+      project: keel
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

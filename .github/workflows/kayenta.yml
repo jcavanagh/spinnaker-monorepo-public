@@ -1,0 +1,32 @@
+name: Kayenta
+run-name: Kayenta ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'kayenta/**'
+      - 'fiat/**'
+      - 'kork/**'
+      - 'orca/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'kayenta/**'
+      - 'fiat/**'
+      - 'kork/**'
+      - 'orca/**'
+
+jobs:
+  kayenta:
+    uses: ./.github/workflows/generic-jvm.yml
+    with:
+      project: kayenta
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

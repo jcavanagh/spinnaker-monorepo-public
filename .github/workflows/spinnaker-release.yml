@@ -1,0 +1,154 @@
+name: Spinnaker Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      spinnakerVersion:
+        description: 'Spinnaker release version, for example: 2023.1.1'
+        type: string
+        required: true
+      minimumHalyardVersion:
+        description: 'Minimum Halyard version required for release, "major.minor", For example: 1.45'
+        default: '1.45'
+        type: string
+        required: true
+      dryRun:
+        type: boolean
+        default: true
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Xmx6g -Xms6g
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate build version (no increment)
+        uses: ./.github/actions/build-tag-number
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prefix: ${{ format('spinnaker-{1}', github.ref_name) }}
+          skip_increment: true
+
+  publish-bom-and-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: Install dependencies with pip
+        run: |
+          pip install -r dev/requirements.txt
+          pip install -r dev/buildtool/requirements.txt
+      - name: Setup git
+        run: |
+          git config --global user.email "sig-platform@spinnaker.io"
+          git config --global user.name "Spinnaker GHA"
+
+      - name: Assemble release info
+        id: release_info
+        run: |
+          echo "RELEASE_GIT_BRANCH=release-${{ inputs.spinnakerVersion }}" >> $GITHUB_ENV
+          echo "Publishing supporting release artifacts for:
+            release version: ${{ inputs.spinnakerVersion }}
+            minimum Halyard version: ${{ inputs.minimumHalyardVersion }}
+            latest Halyard version: ${{ inputs.latestHalyardVersion }}
+            dry run enabled: ${{ inputs.dryRun }}"
+
+      - name: Login to Google Cloud
+        # This is required to publish the bom and versions file
+        #
+        # Only run this on repositories in the 'spinnaker' org, not on forks.
+        if: startsWith(github.repository, 'jcavanagh/')
+        uses: 'google-github-actions/auth@v1'
+        # use service account flow defined at: https://github.com/google-github-actions/upload-cloud-storage#authenticating-via-service-account-key-json
+        with:
+          credentials_json: '${{ secrets.GAR_JSON_KEY }}'
+
+      - name: Build BOM
+        run: |
+          ./buildtool/dev/buildtool.sh \
+            build_bom \
+            --github_owner spinnaker \
+            --git_branch "${{ env.RELEASE_GIT_BRANCH }}" \
+            --build_number "${{ inputs.spinnakerVersion }}" \
+            --refresh_from_bom_path buildtool/dev/buildtool/bom_base.yml \
+            --exclude_repositories spinnaker-monitoring
+
+      - name: Build changelog
+        run: |
+          ./buildtool/dev/buildtool.sh \
+            build_changelog \
+            --changelog_path "${changelog_path}" \
+            --git_branch "${git_branch}" \
+            --spinnaker_version "${version}" \
+            --git_allow_publish_master_branch false \
+            --github_owner "${fork_owner}"
+            --dry_run ${{ inputs.dry_run }}
+
+      - name: Publish changelog
+        run: |
+          ./buildtool/dev/buildtool.sh \
+            publish_changelog \
+            --changelog_path "${changelog_path}" \
+            --git_branch "${git_branch}" \
+            --spinnaker_version "${version}" \
+            --git_allow_publish_master_branch false \
+            --github_owner "${fork_owner}"
+            --dry_run ${{ inputs.dry_run }}
+
+      - name: Update Halyard versions
+        run: |
+          ./buildtool/dev/buildtool.sh \
+            update_versions \
+            --versions_yml_path "${versions_path}" \
+            --spinnaker_version "${version}" \
+            --minimum_halyard_version "${halyard_version}" \
+            --latest_halyard_version "${latest_halyard_version}"
+
+      - name: Publish Halyard versions
+        run: |
+          ./buildtool/dev/buildtool.sh \
+            publish_versions \
+            --versions_yml_path "${versions_path}" \
+            --dry_run ${{ inputs.dry_run }}
+
+      - name: Cat output files for review
+        run: |
+          for f in \
+            output/build_bom/*.yml \
+            output/publish_spinnaker/changelog.md \
+            output/update_versions/versions.yml \
+            ; do echo -e "\n*** ${f} ***"; cat "${f}"; done
+
+      - name: Attach output files to GHA Job
+        uses: actions/upload-artifact@v3
+        with:
+          name: spinnaker_release_${{ inputs.spinnakerVersion }}
+          path: |
+            output/build_bom/*.yml
+            output/publish_spinnaker/changelog.md
+            output/update_versions/versions.yml
+
+  create-gh-release:
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - publish-bom-and-changelog
+    steps:
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          release_name: ${{ inputs.project }} ${{ github.ref }}
+          body: |
+            ${{ needs.version.outputs.changelog }}
+          draft: false
+          prerelease: false

@@ -68,7 +68,7 @@ dependencies {
   api(platform("org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.4.3"))
   //kotlinVersion comes from gradle.properties since we have kotlin code in
   // this project and need to configure gradle plugins etc.
-  api(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
+  api(platform(libs.kotlin.bom))
   api(platform("org.junit:junit-bom:5.6.3"))
   api(platform("com.fasterxml.jackson:jackson-bom:2.12.7.20221012"))
   api(platform("io.zipkin.brave:brave-bom:${versions.brave}"))
@@ -194,17 +194,16 @@ dependencies {
     api("org.jooq:jooq:${versions.jooq}")
     api("org.jooq:jooq-kotlin:${versions.jooq}")
 
-    // The liquibase version starting from 4.0.0 till 4.12.0
-    // has an issue w.r.t parsing the changelog file,
-    // if found at multiple places within the classpath
+    // Gradle 7 duplicate resource validatation and the associated changes resolve the duplicate changelog issue
     // https://github.com/liquibase/liquibase/issues/2818
     // This duplicate changelog issue is fixed in 4.13.0,
     // but identified another issue that gets introduced in 4.13.0.
     // This issue(https://github.com/liquibase/liquibase/issues/3091)
     // hinders the migration of sql scripts available in orca
     // (https://github.com/spinnaker/orca/tree/master/orca-sql/src/main/resources/db/changelog),
-    // containing `afterColumn` construct, with a validation error for postgresql. So pin with 3.10.3
-    api("org.liquibase:liquibase-core:3.10.3"){
+    // containing `afterColumn` construct, with a validation error for postgresql
+    // So, pin to 4.3.5, since that's what current Boot ships with, and further upgrades could break as per the above
+    api("org.liquibase:liquibase-core:4.3.5"){
        force = true
     }
     api("org.objenesis:objenesis:2.5.1")
@@ -220,7 +219,9 @@ dependencies {
     // when we upgrade to spring boot 2.6.x.  It's safe to upgrade beyond 1.29
     // with spring boot >= 2.6.12.  See
     // https://github.com/spring-projects/spring-boot/issues/32228#issue-136185850.0.
-    api("org.yaml:snakeyaml:1.27")
+    api("org.yaml:snakeyaml:1.27") {
+      force = true
+    }
     api("org.springdoc:springdoc-openapi-webmvc-core:${versions.openapi}")
     api("org.springdoc:springdoc-openapi-kotlin:${versions.openapi}")
     api("org.springframework.boot:spring-boot-configuration-processor:${versions.springBoot}")

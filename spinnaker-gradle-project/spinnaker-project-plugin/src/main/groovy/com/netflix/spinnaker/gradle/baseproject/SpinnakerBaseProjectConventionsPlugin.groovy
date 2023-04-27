@@ -19,6 +19,8 @@ import org.gradle.jvm.tasks.Jar
 class SpinnakerBaseProjectConventionsPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
+      project.repositories.mavenCentral()
+
       project.plugins.withType(JavaBasePlugin) {
         project.plugins.apply(MavenPublishPlugin)
         project.repositories.mavenCentral()

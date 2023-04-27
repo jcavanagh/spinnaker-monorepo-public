@@ -1,0 +1,30 @@
+name: Echo
+run-name: Echo ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'echo/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'echo/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  echo:
+    uses: ./.github/workflows/generic-jvm.yml
+    with:
+      project: echo
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

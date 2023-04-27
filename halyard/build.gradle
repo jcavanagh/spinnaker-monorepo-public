@@ -15,7 +15,7 @@
  */
 
 plugins {
-  id 'io.spinnaker.project' version "$spinnakerGradleVersion" apply false
+  id 'io.spinnaker.project' apply false
   id 'com.google.protobuf' version "0.8.12" apply false
 }
 
@@ -39,25 +39,16 @@ subprojects {
     useJUnitPlatform()
   }
 
-  if ([korkVersion, fiatVersion, clouddriverVersion, front50Version].any { it.endsWith("-SNAPSHOT") }) {
-    logger.info("Enabling mavenLocal")
-    repositories {
-      mavenLocal()
-    }
-  }
-
   dependencies {
-    implementation enforcedPlatform("io.spinnaker.kork:kork-bom:$korkVersion")
+    implementation enforcedPlatform("io.spinnaker.kork:kork-bom")
 
-    annotationProcessor platform("io.spinnaker.kork:kork-bom:$korkVersion")
+    annotationProcessor platform("io.spinnaker.kork:kork-bom")
     annotationProcessor "org.projectlombok:lombok"
-    testAnnotationProcessor platform("io.spinnaker.kork:kork-bom:$korkVersion")
+    testAnnotationProcessor platform("io.spinnaker.kork:kork-bom")
     testAnnotationProcessor "org.projectlombok:lombok"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine"
   }
 }
-
-defaultTasks ':halyard-web:run'
 
 // Creates scripts for entry points
 // Subproject must apply application plugin to be able to call this method.
