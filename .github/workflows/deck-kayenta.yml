@@ -1,0 +1,37 @@
+name: Deck Kayenta
+run-name: Deck Kayenta ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - release-*
+    paths:
+      - 'deck-kayenta/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'deck-kayenta/**'
+
+jobs:
+  deck-kayenta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: deck-kayenta
+          publish: ${{ github.event_name != 'pull_request' }}
+          publish-containers: false
+          publish-debs: false
+          publish-halconfig: false
+          publish-npm: true
+          integration-test: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
+          gar-npm-password: ${{ secrets.GAR_NPM_PASSWORD }}
+          npm-auth-token: ${{ secrets.NPM_AUTH_TOKEN }}

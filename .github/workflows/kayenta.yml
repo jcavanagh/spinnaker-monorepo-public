@@ -1,0 +1,38 @@
+name: Kayenta
+run-name: Kayenta ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'kayenta/**'
+      - 'fiat/**'
+      - 'kork/**'
+      - 'orca/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'kayenta/**'
+      - 'fiat/**'
+      - 'kork/**'
+      - 'orca/**'
+
+jobs:
+  kayenta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: kayenta
+          gradle-cmd-opts: -Xmx2g -Xms2g -PenableCrossCompilerPlugin=true
+          publish: ${{ github.event_name != 'pull_request' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}

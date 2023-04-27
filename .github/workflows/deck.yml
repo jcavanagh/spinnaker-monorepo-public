@@ -1,0 +1,35 @@
+name: Deck
+run-name: Deck ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - release-*
+    paths:
+      - 'deck/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'deck/**'
+
+jobs:
+  deck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: deck
+          docker-build-command: ':deck:webpack'
+          publish: ${{ github.event_name != 'pull_request' }}
+          publish-npm: true
+          integration-test: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
+          gar-npm-password: ${{ secrets.GAR_NPM_PASSWORD }}
+          npm-auth-token: ${{ secrets.NPM_AUTH_TOKEN }}

@@ -1,0 +1,153 @@
+name: Generic Build/Publish
+description: Generic build and publish action
+author: jcavanagh
+
+inputs:
+  # Build args
+  project:
+    description: Project to build and (optionally) publish
+    required: true
+  github-token:
+    description: Github token
+    required: true
+  gar-json-key:
+    description: Google Artifact Registry JSON key
+  gar-npm-password:
+    description: Google Artifact Registry NPM password
+  npm-auth-token:
+    description: npmjs.org publishing token
+  gradle-opts:
+    description: Additional Gradle options set via GRADLE_OPTS
+  gradle-cmd-opts:
+    description: Additional Gradle options set via the command line
+    default: -Xmx2g -Xms2g
+  docker-build-command:
+    description: Custom build command for building Docker distributions
+  integration-test:
+    description: If true, build an integration test container and run it
+    default: 'true'
+
+  # Publish args
+  publish:
+    description: Whether or not to publish anything
+    default: 'false'
+  publish-containers:
+    description: If publishing, determines whether to publish containers or not
+    default: 'true'
+  publish-debs:
+    description: If publishing, determines whether to publish debs or not
+    default: 'true'
+  publish-halconfig:
+    description: If publishing, determines whether to publish halconfig or not
+    default: 'true'
+  publish-npm:
+    description: If publishing, determines whether to publish NPM packages or not
+    default: 'false'
+
+runs:
+  using: "composite"
+  steps:
+    - id: version
+      uses: ./.github/actions/version
+      with:
+        project: ${{ inputs.project }}
+        github-token: ${{ inputs.github-token }}
+
+    # Always set up Java, for Gradle
+    - uses: actions/setup-java@v4
+      with:
+        java-version: |
+          11
+          17
+        distribution: 'zulu'
+        cache: ${{ !env.ACT && 'gradle' || '' }}  # Disable Gradle cache when running actions locally
+
+    # Set up nodejs if a package.json file is present in that project
+    - uses: ./.github/actions/setup-node
+      with:
+        project: ${{ inputs.project }}
+
+    # Only run a full build and test cycle for pull_request events
+    # Publishing actions run their own build tasks, as needed
+    - name: Tests
+      if: github.event_name == 'pull_request'
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+      env:
+        GRADLE_OPTS: ${{ inputs.gradle-opts }}
+      run: |
+        ./gradlew ${{ inputs.gradle-cmd-opts }} -Dorg.gradle.daemon=false --stacktrace ':${{ inputs.project }}:build'
+
+    # If configured, build a container, publish it locally, and run its tests
+    - name: Container Integration Tests (build)
+      if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.project }}
+        file: ${{ inputs.project }}/Dockerfile.slim
+        platforms: local
+        build-args: ${{ inputs.build-args }}
+        tags: |
+          ${{ inputs.project }}:${{ inputs.version }}-integration-test"
+
+    - name: Container Integration Tests (test)
+      if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
+      env:
+        FULL_DOCKER_IMAGE_NAME: ${{ inputs.project }}:${{ inputs.version }}-integration-test"
+        GRADLE_OPTS: ${{ inputs.gradle-opts }}
+      shell: bash
+      run: ./gradlew ${{ inputs.gradle-cmd-opts }} -Dorg.gradle.daemon=false :${{ inputs.project }}:${{ inputs.project }}-integration:test
+
+    # Containers should generally be built in PRs to ensure that Dockerfiles are functioning properly
+    - name: Build/Publish Docker containers
+      uses: ./.github/actions/publish-docker
+      if: inputs.publish-containers != 'false'
+      with:
+        project: ${{ inputs.project }}
+        version: ${{ steps.version.outputs.version }}
+        release-train: ${{ steps.version.outputs.release-train-suffixed }}
+        build-url: ${{ steps.version.outputs.build-url }}
+        build-command: ${{ inputs.docker-build-command }}
+        push: ${{ inputs.publish == 'true' && inputs.publish-containers == 'true' }}
+        gar-json-key: ${{ inputs.gar-json-key }}
+
+    - name: Publish Debian packages
+      if: inputs.publish == 'true' && inputs.publish-debs == 'true'
+      uses: ./.github/actions/publish-deb
+      with:
+        project: ${{ inputs.project }}
+        is-release: ${{ steps.version.outputs.is-release }}
+        version: ${{ steps.version.outputs.version }}
+        build-number: ${{ steps.version.outputs.build-number }}
+        gar-json-key: ${{ inputs.gar-json-key }}
+
+    - name: Publish Halconfig
+      if: inputs.publish == 'true' && inputs.publish-halconfig == 'true'
+      uses: ./.github/actions/publish-halconfig
+      with:
+        project: ${{ inputs.project }}
+        version: ${{ steps.version.outputs.version }}
+        gar-json-key: ${{ inputs.gar-json-key }}
+
+    - name: Publish NPM
+      if: inputs.publish == 'true' && inputs.publish-npm == 'true'
+      uses: ./.github/actions/publish-npm
+      with:
+        project: ${{ inputs.project }}
+        version: ${{ steps.version.outputs.semver }}
+        gar-npm-password: ${{ inputs.gar-npm-password }}
+        npm-auth-token: ${{ inputs.npm-auth-token }}
+
+    - name: Create Tag
+      uses: actions/github-script@v7
+      if: inputs.publish == 'true'
+      env:
+        TAG: ${{ steps.version.outputs.tag }}
+      with:
+        script: |
+          github.rest.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: 'refs/tags/' + process.env.TAG,
+            sha: context.sha
+          })
