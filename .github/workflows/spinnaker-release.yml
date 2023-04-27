@@ -1,0 +1,44 @@
+name: Spinnaker Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      spinnakerVersion:
+        description: 'Spinnaker release version, for example: 2023.1.1'
+        type: string
+        required: true
+      dryRun:
+        type: boolean
+        description: Dry run
+        default: true
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Xmx6g -Xms6g
+
+jobs:
+  create-spinnaker-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Spinnaker release
+        uses: ./.github/actions/spinnaker-release
+        with:
+          version: ${{ inputs.spinnakerVersion }}
+          dry_run: ${{ inputs.dryRun }}
+
+  create-gh-release:
+    runs-on: ubuntu-latest
+    needs:
+      - create-spinnaker-release
+    if: ${{ inputs.dryRun != 'false' }}
+    steps:
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          release_name: ${{ inputs.project }} ${{ github.ref }}
+          body: |
+            ${{ needs.version.outputs.changelog }}
+          draft: false
+          prerelease: false

@@ -1,0 +1,30 @@
+name: Igor
+run-name: Igor ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'igor/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'igor/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  igor:
+    uses: ./.github/workflows/generic-jvm.yml
+    with:
+      project: igor
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

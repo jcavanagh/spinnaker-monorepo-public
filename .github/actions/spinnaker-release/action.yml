@@ -1,0 +1,87 @@
+name: Spinnaker Release
+description: Generates artifacts for a Spinnaker release
+author: jcavanagh
+
+runs:
+  using: node20
+  main: dist/index.js
+
+inputs:
+  mode:
+    description: Which tasks should be performed, one of `all`, `bom`, `versions.yml`
+    required: true
+    default: 'all'
+  dry_run:
+    description: Whether or not to publish produced artifacts to the central releases repository
+    default: 'true'
+
+  # BoM configuration
+  version:
+    description: BoM version
+  branch:
+    description: Reference branch to retrieve service versions from.  If not specified, infers it from the BoM version.
+  previous_version:
+    description: Previous BoM version to use as a comparison basis for changelogs.  Uses reasonable defaults if not provided.
+  service_overrides:
+    description: Comma-separated list of version overrides for services, e.g. `clouddriver:2023.3.1,orca:2023.3.2`
+  add_to_versions_yml:
+    description: Whether or not to add this BoM version to `versions.yml`
+    default: 'true'
+
+  # Versions.yml configuration
+  versions_yml_add:
+    description: Adds entries for the specified versions to `versions.yml`.
+  versions_yml_remove:
+    description: Removes entries for the specified versions from `versions.yml`
+
+  # GCP stuff
+  credentials_json:
+    description: GCP credentials for publishing and retrieving existing files.
+  bucket:
+    description: GCP bucket for BoM/etc storage.
+    default: 'spinnaker-monorepo-test'
+  bom_path:
+    description: Path within the GCP bucket in which BoMs are stored
+    default: 'halconfig/boms'
+  versions_yml_bucket_path:
+    description: Path within the GCP bucket at which Halyard's `versions.yml` lives
+    default: 'halconfig'
+
+  # ArtifactSources defaults
+  as_debian_repository:
+    description: Debian repository to write to artifactSources
+    default: https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/apt
+#    default: https://us-apt.pkg.dev/projects/spinnaker-community
+  as_docker_registry:
+    description: Docker registry to write to artifactSources
+    default: https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
+#    default: us-docker.pkg.dev/spinnaker-community/docker
+  as_git_prefix:
+    description: Git prefix to write to artifactSources
+    default: https://github.com/jcavanagh/spinnaker-monorepo-public
+#    default: https://github.com/spinnaker
+  as_google_image_project:
+    description: Google image project to write to artifactSources
+    default: https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
+#    default: marketplace-spinnaker-release
+
+  # Dependency defaults
+  dep_consul_version:
+    description: Consul version to write to dependencies
+    default: '0.7.5'
+  dep_redis_version:
+    description: Redis version to write to dependencies
+    default: '2:2.8.4-2'
+  dep_vault_version:
+    description: Vault version to write to dependencies
+    default: '0.7.0'
+
+outputs:
+  bom:
+    description: BoM contents
+  bom_url:
+    description: Link to published BoM
+  versions_yml:
+    description: `versions.yml` contents
+  versions_yml_url:
+    description: Link to published `versions.yml`

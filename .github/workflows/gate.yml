@@ -1,0 +1,30 @@
+name: Gate
+run-name: Gate ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'gate/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'gate/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  gate:
+    uses: ./.github/workflows/generic-jvm.yml
+    with:
+      project: gate
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit
