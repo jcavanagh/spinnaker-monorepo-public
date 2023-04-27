@@ -1,0 +1,40 @@
+name: Halyard
+run-name: Halyard ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'halyard/**'
+      - 'clouddriver/**'
+      - 'fiat/**'
+      - 'front50/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'halyard/**'
+      - 'clouddriver/**'
+      - 'fiat/**'
+      - 'front50/**'
+      - 'kork/**'
+
+jobs:
+  halyard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: halyard
+          publish: ${{ github.event_name != 'pull_request' }}
+          publish-halconfig: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}

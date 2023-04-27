@@ -18,7 +18,10 @@
 rm -f swagger/swagger.json
 # Runs GenerateSwagger.groovy Spock Spec to generate the swagger spec.
 # This Spec enables optional but standard features to document the full API.
-./gradlew clean && ./gradlew gate-web:test --tests *GenerateSwagger*
+cd .. # Swap to monorepo root
+# Gradle 7.6 --rerun omits the previous need for a mid-build :gate:clean
+./gradlew :gate:gate-web:test --rerun --tests '*GenerateSwagger*'
+cd 'gate' || exit 1 # Back to Gate
 touch swagger/swagger.json
 cat gate-web/swagger.json | json_pp > swagger/swagger.json
 rm gate-web/swagger.json

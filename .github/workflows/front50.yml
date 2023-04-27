@@ -1,0 +1,35 @@
+name: Front50
+run-name: Front50 ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'front50/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'front50/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  front50:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: front50
+          publish: ${{ github.event_name != 'pull_request' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}

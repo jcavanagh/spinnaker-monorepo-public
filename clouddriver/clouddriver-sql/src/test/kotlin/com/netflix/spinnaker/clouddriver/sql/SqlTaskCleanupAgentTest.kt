@@ -54,7 +54,7 @@ class SqlTaskCleanupAgentTest : JUnit5Minutests {
             "7b96fe8de1e5e8e8620036480771195b8e25c583c9f4f0098a23e97bf2ba013b",
             "95637b33-6699-4abf-b1ab-d4077e1cf867@spin-clouddriver-7847bc646b-hgkfd",
             ts.toEpochMilli(),
-            mutableListOf<String>()
+            "[]"
           )
           .execute()
 

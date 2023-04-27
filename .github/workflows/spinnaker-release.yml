@@ -1,0 +1,65 @@
+name: Spinnaker Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      spinnaker-version:
+        description: (optional) Spinnaker release version, e.g. 2023.1.1.  If not specified, uses automated build numbering.
+        type: string
+      previous-version:
+        description: (optional) Previous Spinnaker release version to use for changelogs.  If not specified, infers previous from the `spinnaker-version` input.
+        type: string
+      add-to-versions-yml:
+        description: Add this version to `versions.yml` for Halyard?
+        type: boolean
+        default: true
+      dry-run:
+        type: boolean
+        description: Dry run?
+        default: true
+
+jobs:
+  spinnaker-release:
+    runs-on: ubuntu-latest
+    steps:
+      - id: version
+        uses: ./.github/actions/version
+        if: inputs.spinnaker-version == ''
+        with:
+          project: spinnaker
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-increment: ${{ inputs.dry-run != 'false' }}
+
+      - name: Process Inputs
+        shell: bash
+        run: |
+          if [[ '${{ inputs.spinnaker-version }}' == '' ]]; then
+            echo "spinnaker-version=${{ steps.version.release-train }}.${{ steps.version.build-number }}" >> "$GITHUB_ENV"
+          else
+            echo "spinnaker-version=${{ inputs.spinnaker-version }}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Create Spinnaker release BoM and changelog
+        id: spinnaker-release
+        uses: ./.github/actions/spinnaker-release
+        with:
+          version: ${{ env.spinnaker-version }}
+          previous_version: ${{ inputs.previous-version }}
+          dry_run: ${{ inputs.dry-run }}
+
+      - name: Create release
+        if: inputs.dry-run != 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: spinnaker-release-${{ inputs.spinnaker-version }}
+          release_name: Spinnaker ${{ inputs.spinnaker-version }}
+          body: |
+            ${{ steps.spinnaker-release.outputs.changelog }}
+          draft: false
+          prerelease: false
+
+      - name: Summarize
+        shell: bash
+        run: |
