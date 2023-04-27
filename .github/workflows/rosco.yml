@@ -1,0 +1,30 @@
+name: Rosco
+run-name: Rosco ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'rosco/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'rosco/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  rosco:
+    uses: ./.github/workflows/generic-build-publish.yml
+    with:
+      project: rosco
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

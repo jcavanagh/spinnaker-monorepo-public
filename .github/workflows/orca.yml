@@ -1,0 +1,30 @@
+name: Orca
+run-name: Orca ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'orca/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'orca/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  orca:
+    uses: ./.github/workflows/generic-build-publish.yml
+    with:
+      project: orca
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

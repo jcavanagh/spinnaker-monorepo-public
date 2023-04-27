@@ -1,0 +1,24 @@
+name: Deck
+run-name: Deck ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  push:
+    branches:
+      - release-*
+    paths:
+      - 'deck/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'deck/**'
+
+jobs:
+  deck:
+    uses: ./.github/workflows/generic-build-publish.yml
+    with:
+      project: deck
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

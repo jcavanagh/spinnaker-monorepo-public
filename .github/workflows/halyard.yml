@@ -1,0 +1,35 @@
+name: Halyard
+run-name: Halyard ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'halyard/**'
+      - 'clouddriver/**'
+      - 'fiat/**'
+      - 'front50/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'halyard/**'
+      - 'clouddriver/**'
+      - 'fiat/**'
+      - 'front50/**'
+      - 'kork/**'
+
+jobs:
+  halyard:
+    uses: ./.github/workflows/generic-build-publish.yml
+    with:
+      project: halyard
+      publish: ${{ github.event_name != 'pull_request' }}
+      publish-halconfig: false
+    secrets: inherit

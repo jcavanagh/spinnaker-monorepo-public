@@ -1,0 +1,21 @@
+name: Publish (npm)
+description: Publishes NPM packages for a Spinnaker project
+author: jcavanagh
+
+inputs:
+  project:
+    description: Project to publish
+    required: true
+  is-release:
+    description: Whether this is a release build or not
+    required: true
+  version:
+    description: The version to publish
+    required: true
+  gar-json-key:
+    description: Google Artifact Registry JSON key
+    required: true
+
+# This is designed to run as part of another job that has already checked out the project and built it
+runs:
+  using: "composite"

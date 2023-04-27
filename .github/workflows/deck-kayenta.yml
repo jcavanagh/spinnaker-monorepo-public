@@ -1,0 +1,24 @@
+name: Deck Kayenta
+run-name: Deck Kayenta ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  push:
+    branches:
+      - release-*
+    paths:
+      - 'deck-kayenta/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'deck-kayenta/**'
+
+jobs:
+  deck:
+    uses: ./.github/workflows/generic-build-publish.yml
+    with:
+      project: deck-kayenta
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

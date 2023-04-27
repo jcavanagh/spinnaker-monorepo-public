@@ -1,0 +1,84 @@
+name: Version
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: Project to generate build version for
+        type: string
+        required: true
+
+    outputs:
+      build-number:
+        description: The current sequential build number e.g. 1
+        value: ${{ jobs.version.outputs.build-number }}
+      release-train:
+        description: The current cleaned-up release ref, e.g. `main` or `2023.1`
+        value: ${{ jobs.version.outputs.release-train }}
+      release-train-suffixed:
+        description: As above, but release refs have the .x suffixed, e.g. 2023.1.x
+        value: ${{ jobs.version.outputs.release-train-suffixed }}
+      version:
+        description: The combined specific version, e.g. `main.1` or `2023.1.1`
+        value: ${{ jobs.version.outputs.version }}
+      is-release:
+        description: true if ref is a release branch, false if not
+        value: ${{ jobs.version.outputs.is-release }}
+      tag:
+        description: The tag this run will create, e.g. `clouddriver-main.1` or `clouddriver-2023.1.1`
+        value: ${{ jobs.version.outputs.tag }}
+      build-url:
+        description: A link back to the Github Action run
+        value: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      build-number: ${{ steps.version.outputs.build-number }}
+      release-train: ${{ steps.version.outputs.release-train }}
+      release-train-suffixed: ${{ steps.version.outputs.release-train-suffixed }}
+      version: ${{ steps.version.outputs.version }}
+      is-release: ${{ steps.version.outputs.is-release }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Create an incrementing version number based on the branch and thing we are building
+      # e.g. for any project doing a release on `main`, this would store a magic tag named
+      # bn-<project>-main-X, where X is the incrementing build number for that prefix.
+      # Publishing libraries all at once is required, as -bom packages will write the global version
+      # into all composite dependencies - a partial publish will fail to resolve entirely.
+      # Other artifacts (containers, debs) do not need to be published on every cycle, and use their event paths config.
+      - name: Generate build version
+        uses: ./.github/actions/build-tag-number
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          suffix: ${{ format('{0}-{1}', inputs.project, github.ref_name) }}
+          # Only push events should increase the build number
+          skip-increment: ${{ github.event_name != 'push' }}
+
+      # Output the version and its components for the caller to reference
+      - name: Output build version
+        id: version
+        run: |
+          REF="${{ github.ref_name }}"
+          CLEAN_REF="${REF#release-}"
+          echo "release-train-suffixed=$CLEAN_REF" >> "$GITHUB_OUTPUT"
+          
+          CLEAN_REF="${CLEAN_REF%.x}"
+          echo "build-number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "release-train=$CLEAN_REF" >> "$GITHUB_OUTPUT"
+          
+          VERSION="$CLEAN_REF-$BUILD_NUMBER"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          
+          IS_RELEASE="false"
+          if [[ "$REF" =~ release-* ]]; then
+            IS_RELEASE='true'
+          fi
+          echo "is-release=$IS_RELEASE" >> "$GITHUB_OUTPUT"
+          
+          echo "tag=${{ inputs.project }}-$VERSION" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,43 @@
+name: Publish (deb)
+description: Publishes Debian packages for a Spinnaker project
+author: jcavanagh
+
+inputs:
+  project:
+    description: Project to publish
+    required: true
+  is-release:
+    description: Whether this is a release build or not
+    required: true
+  version:
+    description: The version to publish
+    required: true
+  gar-json-key:
+    description: Google Artifact Registry JSON key
+    required: true
+
+# This is designed to run as part of another job that has already checked out the project and built it
+runs:
+  using: "composite"
+  steps:
+    - name: Login to Google Cloud
+      uses: google-github-actions/auth@v2
+      # use service account flow defined at: https://github.com/google-github-actions/upload-cloud-storage#authenticating-via-service-account-key-json
+      with:
+        credentials_json: ${{ inputs.gar-json-key }}
+
+    - name: Publish apt packages to Google Artifact Registry
+      env:
+        # If this is a release version, it's a valid deb version e.g. 2023.1.1
+        # If this is a main build, the package name itself is suffixed with -main and the version is the sequential build number
+        ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
+        ORG_GRADLE_PROJECT_artifactRegistryPublishEnabled: true
+        ORG_GRADLE_PROJECT_artifactRegistryPublishAptEnabled: true
+        ORG_GRADLE_PROJECT_artifactRegistryPublishMavenEnabled: false
+        ORG_GRADLE_PROJECT_artifactRegistryAptProject: spinnaker-monorepo-test
+        ORG_GRADLE_PROJECT_artifactRegistryAptLocation: us-west2
+        ORG_GRADLE_PROJECT_artifactRegistryAptTempGcsBucket: spinnaker-monorepo-test-deb-temp-uploads
+        ORG_GRADLE_PROJECT_ospackageSuffix: ${{ inputs.is-release == 'false' && '-dev' || '' }}
+        GAR_JSON_KEY: ${{ inputs.gar-json-key }}
+      run: |
+        ./gradlew --info :${{ inputs.project }}:publish

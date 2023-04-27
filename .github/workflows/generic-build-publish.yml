@@ -1,0 +1,119 @@
+name: Generic Build/Publish
+
+on:
+  workflow_call:
+    inputs:
+      # Build args
+      project:
+        description: Project to build and (optionally) publish
+        type: string
+        required: true
+      gradle-opts:
+        description: Additional Gradle options set via GRADLE_OPTS
+        default: -Dorg.gradle.daemon=false -Xmx2g -Xms2g
+        type: string
+
+      # Publish args
+      publish:
+        description: Whether or not to publish anything
+        default: 'false'
+        type: string
+      publish-containers:
+        description: If publishing, determines whether to publish containers or not
+        default: 'true'
+        type: string
+      publish-debs:
+        description: If publishing, determines whether to publish debs or not
+        default: 'true'
+        type: string
+      publish-halconfig:
+        description: If publishing, determines whether to publish halconfig or not
+        default: 'true'
+        type: string
+      publish-npm:
+        description: If publishing, determines whether to publish NPM packages or not
+        default: 'false'
+        type: string
+      container-registry:
+        description: Destination container registry
+        default: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
+        type: string
+
+jobs:
+  version:
+    uses: ./.github/workflows/version.yml
+    with:
+      project: ${{ inputs.project }}
+    secrets: inherit
+
+  build-and-publish:
+    runs-on: ubuntu-latest
+    needs:
+      - version
+    steps:
+      - uses: actions/checkout@v4
+
+      # Always set up Java, for Gradle
+      - uses: actions/setup-java@v4
+        with:
+          java-version: |
+            17
+            11
+          distribution: 'zulu'
+          cache: ${{ !env.ACT && 'gradle' || '' }}  # Disable Gradle cache when running actions locally
+
+      # Set up nodejs if a package.json file is present in that project
+      - uses: ./.github/actions/setup-node
+        with:
+          project: ${{ inputs.project }}
+
+      # Only run a full build and test cycle for pull_request events
+      # Publishing actions run their own build tasks, as needed
+      - name: Tests
+        if: github.event_name == 'pull_request'
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          GRADLE_OPTS: ${{ inputs.gradle-opts }}
+          ORG_GRADLE_PROJECT_version: ${{ needs.version.outputs.version }}
+        run: |
+          ./gradlew --stacktrace ':${{ inputs.project }}:build'
+
+      # Containers should be built in PRs to ensure that Dockerfiles are functioning properly
+      - name: Build/Publish Docker containers
+        uses: ./.github/actions/publish-docker
+        with:
+          project: ${{ inputs.project }}
+          version: ${{ needs.version.outputs.version }}
+          push: ${{ inputs.publish == 'true' && inputs.publish-containers == 'true' }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
+
+      - name: Publish Debian packages
+        if: inputs.publish == 'true' && inputs.publish-debs == 'true'
+        uses: ./.github/actions/publish-deb
+        with:
+          project: ${{ inputs.project }}
+          is-release: ${{ needs.version.outputs.is-release }}
+          version: ${{ needs.version.outputs.version }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
+
+      - name: Publish Halconfig
+        if: inputs.publish == 'true' && inputs.publish-halconfig == 'true'
+        uses: ./.github/actions/publish-halconfig
+        with:
+          project: ${{ inputs.project }}
+          version: ${{ needs.version.outputs.version }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
+
+      - name: Create Tag
+        uses: actions/github-script@v7
+        if: inputs.publish == 'true'
+        env:
+          TAG: ${{ needs.version.outputs.tag }}
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/' + process.env.TAG,
+              sha: context.sha
+            })

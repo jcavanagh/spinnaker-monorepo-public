@@ -1,0 +1,30 @@
+name: Front50
+run-name: Front50 ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'front50/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'front50/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  front50:
+    uses: ./.github/workflows/generic-build-publish.yml
+    with:
+      project: front50
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit

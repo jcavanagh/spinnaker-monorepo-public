@@ -1,0 +1,112 @@
+name: Publish (docker)
+description: Publishes Docker containers for a Spinnaker project
+author: jcavanagh
+
+inputs:
+  project:
+    description: Project to publish
+    required: true
+  build-url:
+    description: The build URL to reference in metadata
+    required: true
+  push:
+    description: Whether to push the build images or not.  e.g. PRs should build, but not push, images
+    default: 'false'
+  version:
+    description: The version to publish
+    required: true
+  gar-json-key:
+    description: Google Artifact Registry JSON key
+    required: true
+
+# This is designed to run as part of another job that has already checked out the project
+runs:
+  using: "composite"
+  steps:
+    - name: Login to GAR
+      uses: docker/login-action@v3
+      # use service account flow defined at: https://github.com/docker/login-action#service-account-based-authentication-1
+      with:
+        registry: us-west2-docker.pkg.dev
+        username: _json_key
+        password: ${{ inputs.gar-json-key }}
+
+    - name: Build distribution for containerization
+      env:
+        ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
+      shell: bash
+      run: |
+        ./gradlew :${{ inputs.project }}:${{ inputs.project }}-web:installDist
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        version: latest
+
+    - name: Build and publish slim container image
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.project }}
+        file: ${{ inputs.project }}/Dockerfile.slim
+        platforms: linux/amd64,linux/arm64
+        push: ${{ inputs.push == 'true' }}
+        tags: |
+          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-unvalidated"
+          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-unvalidated-slim"
+        labels: |
+          "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
+          "org.opencontainers.image.revision=${{ github.sha }}"
+          "org.opencontainers.image.version=${{ inputs.version }}"
+          "io.spinnaker.ci-build=${{ inputs.build-url }}"
+
+    - name: Build and publish ubuntu container image
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.project }}
+        file: ${{ inputs.project }}/Dockerfile.ubuntu
+        platforms: linux/amd64,linux/arm64
+        push: ${{ inputs.push == 'true' }}
+        tags: |
+          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-unvalidated-ubuntu"
+        labels: |
+          "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
+          "org.opencontainers.image.revision=${{ github.sha }}"
+          "org.opencontainers.image.version=${{ inputs.version }}"
+          "io.spinnaker.ci-build=${{ inputs.build-url }}"
+
+    # If we have a Dockerfile.java11.[ubuntu|slim] file, attempt to build it
+    - name: Build and publish slim JRE 11 container image
+      if: hashFiles(format('{0}/Dockerfile.java11.slim', inputs.project)) != ''
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.project }}
+        file: ${{ inputs.project }}/Dockerfile.slim
+        platforms: linux/amd64,linux/arm64
+        push: ${{ inputs.push == 'true' }}
+        tags: |
+          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11-unvalidated"
+          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11-unvalidated-slim"
+        labels: |
+          "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
+          "org.opencontainers.image.revision=${{ github.sha }}"
+          "org.opencontainers.image.version=${{ inputs.version }}"
+          "io.spinnaker.ci-build=${{ inputs.build-url }}"
+
+    - name: Build and publish ubuntu JRE 11 container image
+      if: hashFiles(format('{0}/Dockerfile.java11.ubuntu', inputs.project)) != ''
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.project }}
+        file: ${{ inputs.project }}/Dockerfile.ubuntu
+        platforms: linux/amd64,linux/arm64
+        push: ${{ inputs.push == 'true' }}
+        tags: |
+          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11-unvalidated-ubuntu"
+        labels: |
+          "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
+          "org.opencontainers.image.revision=${{ github.sha }}"
+          "org.opencontainers.image.version=${{ inputs.version }}"
+          "io.spinnaker.ci-build=${{ inputs.build-url }}"

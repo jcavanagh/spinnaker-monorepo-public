@@ -1,0 +1,31 @@
+name: Clouddriver
+run-name: Clouddriver ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'clouddriver/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'clouddriver/**'
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  clouddriver:
+    uses: ./.github/workflows/generic-build-publish.yml
+    with:
+      project: clouddriver
+      gradle-opts: -Dorg.gradle.daemon=false -Xmx6g -Xms6g
+      publish: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit
