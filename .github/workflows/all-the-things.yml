@@ -1,0 +1,37 @@
+name: All the Things
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # Runs everything except integration test tasks
+  clouddriver:
+    uses: ./.github/workflows/clouddriver.yml
+  deck:
+    uses: ./.github/workflows/deck.yml
+  deck-kayenta:
+    uses: ./.github/workflows/deck-kayenta.yml
+  echo:
+    uses: ./.github/workflows/echo.yml
+  fiat:
+    uses: ./.github/workflows/fiat.yml
+  front50:
+    uses: ./.github/workflows/front50.yml
+  gate:
+    uses: ./.github/workflows/gate.yml
+  halyard:
+    uses: ./.github/workflows/halyard.yml
+  igor:
+    uses: ./.github/workflows/igor.yml
+  kayenta:
+    uses: ./.github/workflows/kayenta.yml
+  keel:
+    uses: ./.github/workflows/keel.yml
+  orca:
+    uses: ./.github/workflows/orca.yml
+  rosco:
+    uses: ./.github/workflows/rosco.yml
+  spin:
+    uses: ./.github/workflows/spin.yml
+  libs:
+    uses: ./.github/workflows/spinnaker-libraries.yml
