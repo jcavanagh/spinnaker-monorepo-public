@@ -9,9 +9,6 @@ dependencies {
 }
 
 test {
-  minHeapSize = "512m"
-  maxHeapSize = "1g"
-
   useJUnitPlatform {
     includeEngines("junit-jupiter")
   }

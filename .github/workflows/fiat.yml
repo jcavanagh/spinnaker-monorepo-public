@@ -1,0 +1,35 @@
+name: Fiat
+run-name: Fiat ${{ github.ref_name }} (${{ github.event_name }})
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'fiat/**'
+      - 'kork/**'
+
+  pull_request:
+    branches:
+      - main
+      - release-*
+    paths:
+      - 'fiat/**'
+      - 'kork/**'
+
+jobs:
+  fiat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: fiat
+          gradle-cmd-opts: -PenableCrossCompilerPlugin=true
+          publish: ${{ github.event_name != 'pull_request' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
