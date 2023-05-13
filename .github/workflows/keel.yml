@@ -21,10 +21,14 @@ on:
       - 'fiat/**'
       - 'kork/**'
 
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Xmx8g -Xms8g
+
 jobs:
   keel:
     uses: ./.github/workflows/generic-jvm.yml
     with:
       project: keel
       publish: ${{ github.event_name != 'pull_request' }}
+      publish-halconfig: false
     secrets: inherit

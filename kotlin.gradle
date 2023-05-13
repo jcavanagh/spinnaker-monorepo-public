@@ -57,6 +57,8 @@ compileKotlin {
   kotlinOptions {
     languageVersion = "1.4"
     jvmTarget = "11"
+    // see https://kotlinlang.org/docs/java-to-kotlin-interop.html#compatibility-mode-for-default-methods
+    freeCompilerArgs += "-Xjvm-default=enable"
   }
 }
 
@@ -64,5 +66,6 @@ compileTestKotlin {
   kotlinOptions {
     languageVersion = "1.4"
     jvmTarget = "11"
+    freeCompilerArgs += "-Xjvm-default=enable"
   }
 }
