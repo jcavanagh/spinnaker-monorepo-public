@@ -73,6 +73,7 @@ tasks.register('check') {
 }
 
 tasks.register('release') {
+    dependsOn 'gotest'
     dependsOn 'gorelease'
 }
 
@@ -105,7 +106,7 @@ tasks.register('gotest') {
 }
 
 tasks.register('gorelease') {
-    dependsOn 'gotest'
+    mustRunAfter 'gotest'
 
     onlyIf {
         if(System.getenv('VERSION') != null) {

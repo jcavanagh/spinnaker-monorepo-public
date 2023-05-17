@@ -16,6 +16,7 @@ on:
       - 'spin/**'
 
 env:
+  REGISTRY_REGION: us-west2-docker.pkg.dev
   CONTAINER_REGISTRY: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
   GCS_BUCKET: 'spinnaker-monorepo-test/spin'
 
@@ -24,20 +25,6 @@ jobs:
     uses: ./.github/workflows/version.yml
     with:
       project: 'spin'
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    - uses: actions/setup-go@v4
-      with:
-        go-version-file: go.mod
-        cache: false
-    - name: Ensure code formatting and style is consistent
-      uses: golangci/golangci-lint-action@v3
-      with:
-        version: v1.45.2
 
   release:
     runs-on: ubuntu-latest
@@ -48,7 +35,7 @@ jobs:
 
       - uses: actions/setup-go@v4
         with:
-          go-version-file: go.mod
+          go-version-file: spin/go.mod
           cache: false
 
       - uses: actions/setup-java@v2
@@ -64,21 +51,60 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
+      - name: Build Gate API
+        run: ./gradlew :spin:gateapi
+
+      - name: Ensure code formatting and style is consistent
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.45.2
+          working-directory: spin
+
       - name: Build binaries
         env:
           VERSION: ${{ needs.version.outputs.version }}
-        run: ./gradlew :spin:release
+        run: ./gradlew :spin:gorelease
 
       - name: Login to Google Cloud
-        uses: 'google-github-actions/auth@v1'
+        uses: google-github-actions/auth@v1
         # use service account flow defined at: https://github.com/google-github-actions/upload-cloud-storage#authenticating-via-service-account-key-json
         with:
-          credentials_json: '${{ secrets.GAR_JSON_KEY }}'
+          credentials_json: ${{ secrets.GAR_JSON_KEY }}
 
       - name: Upload spin CLI binaries to GCS
-        uses: 'google-github-actions/upload-cloud-storage@v1'
+        uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: 'spin/dist/'
+          destination: ${{ env.GCS_BUCKET }}
+          parent: false
+
+      - name: Determine latest spin CLI version and write to '(MAJOR.MINOR.x-)latest' files
+        continue-on-error: true
+        run: |
+          gcs_latest="$(curl -s https://storage.googleapis.com/spinnaker-artifacts/spin/latest)"
+          release=${{ needs.version.outputs.version }}
+          
+          # SemVer sort 1.22.0 as later than 1.21.1, and exclude the XML GCP sends if the file doesn't exist
+          latest="$(printf "%s\n%s" "${gcs_latest}" "${release}" | grep -v '<?xml' | sort -V | tail -n1)"
+          
+          cat <<EOF
+          gcs_latest: $gcs_latest
+          release: $release
+          latest: $latest
+          EOF
+          
+          mkdir -p dist/latests
+          echo "$latest" > dist/latests/latest
+          if [[ '${{ needs.version.outputs.is-release }}' == 'true' ]]; then
+            # Bump latest version in MAJOR.MINOR
+            echo "$release" > dist/latests/"${{ needs.version.outputs.release-train-suffixed }}-latest"
+          fi
+
+      - name: Upload latest version reference files
+        # See: https://spinnaker.io/docs/setup/other_config/spin/
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          path: 'dist/latests'
           destination: ${{ env.GCS_BUCKET }}
           parent: false
 
@@ -86,15 +112,15 @@ jobs:
         uses: docker/login-action@v2
         # use service account flow defined at: https://github.com/docker/login-action#service-account-based-authentication-1
         with:
-          registry: us-docker.pkg.dev
+          registry: ${{ env.REGISTRY_REGION }}
           username: _json_key
           password: ${{ secrets.GAR_JSON_KEY }}
 
       - name: Build and publish container image
         uses: docker/build-push-action@v4
         with:
-          context: .
-          file: Dockerfile
+          context: spin
+          file: spin/Dockerfile
           push: true
           build-args: |
             "VERSION=${{ needs.version.outputs.version }}"
