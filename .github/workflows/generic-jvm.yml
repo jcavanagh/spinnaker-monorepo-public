@@ -58,7 +58,7 @@ jobs:
         with:
           java-version: ${{ inputs.java-version }}
           distribution: ${{ inputs.java-distribution }}
-          cache: ${{ !env.ACT && 'gradle' || '' }} # Disable Gradle cache when running actions locally
+          cache: ${{ !env.ACT && 'gradle' || '' }}
 
       - name: Build
         working-directory: ${{ inputs.working-directory }}

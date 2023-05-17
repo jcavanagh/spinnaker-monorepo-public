@@ -218,7 +218,6 @@ TODO
 - Git tagging in general
 - Deck build and publish
 - Spin CLI build and publish
-- Keel build and publish
 - One-button release with `buildtool` BOM/changelog generation
 - Figure out what all the new versions broke in Halyard
 - Rework plugin version compatibility checking against the new versioning system
@@ -227,7 +226,6 @@ TODO
 
 - Error from SpinnakerNewIdeaProjectPlugin - tries to read from subtree .git folders and outputs an error
 - Spotless pre-commit hooks get added in all subtrees - needs to move to root
-- Echo build folders end up in echo/echo for some reason instead of echo/
 - Gradle project names for echo and spinnaker-gradle-project don't show up right in IntelliJ
 - Per-project Gradle cache keys?
 - Some gradle errors regarding optimizations disabled regarding protobufs:

@@ -62,7 +62,7 @@ dependencies {
   testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   testImplementation("io.spinnaker.kork:kork-security")
   testImplementation("com.squareup.okhttp3:mockwebserver")
-  testImplementation("org.testcontainers:mysql:${testContainersVersion}")
+  testImplementation("org.testcontainers:mysql")
   testImplementation("com.networknt:json-schema-validator:1.0.43")
   testImplementation("io.spinnaker.kork:kork-plugins")
   testImplementation("com.graphql-java:graphql-java-extended-scalars:16.0.0")
