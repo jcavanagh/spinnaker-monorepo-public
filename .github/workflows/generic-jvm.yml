@@ -163,7 +163,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build and publish slim container image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: ${{ inputs.project}}
           file: ${{ inputs.project}}/Dockerfile.slim
@@ -179,7 +179,7 @@ jobs:
             "io.spinnaker.ci-build=${{ needs.version.outputs.build-url }}"
 
       - name: Build and publish ubuntu container image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: ${{ inputs.project}}
           file: ${{ inputs.project}}/Dockerfile.ubuntu

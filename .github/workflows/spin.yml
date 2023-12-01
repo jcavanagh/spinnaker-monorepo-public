@@ -117,7 +117,7 @@ jobs:
           password: ${{ secrets.GAR_JSON_KEY }}
 
       - name: Build and publish container image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: spin
           file: spin/Dockerfile
