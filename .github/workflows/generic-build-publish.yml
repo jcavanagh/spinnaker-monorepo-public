@@ -34,10 +34,6 @@ on:
         description: If publishing, determines whether to publish NPM packages or not
         default: 'false'
         type: string
-      container-registry:
-        description: Destination container registry
-        default: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
-        type: string
 
 jobs:
   version:

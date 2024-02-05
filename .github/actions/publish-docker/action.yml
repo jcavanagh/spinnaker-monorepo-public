@@ -15,6 +15,9 @@ inputs:
   version:
     description: The version to publish
     required: true
+  container-registry:
+    description: Destination container registry
+    default: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
   gar-json-key:
     description: Google Artifact Registry JSON key
     required: true
