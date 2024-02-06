@@ -39,5 +39,6 @@ runs:
         ORG_GRADLE_PROJECT_artifactRegistryAptTempGcsBucket: spinnaker-monorepo-test-deb-temp-uploads
         ORG_GRADLE_PROJECT_ospackageSuffix: ${{ inputs.is-release == 'false' && '-dev' || '' }}
         GAR_JSON_KEY: ${{ inputs.gar-json-key }}
+      shell: bash
       run: |
         ./gradlew --info :${{ inputs.project }}:publish
