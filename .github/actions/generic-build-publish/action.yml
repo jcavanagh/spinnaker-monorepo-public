@@ -37,8 +37,6 @@ runs:
       with:
         project: ${{ inputs.project }}
 
-    - uses: actions/checkout@v4
-
     # Always set up Java, for Gradle
     - uses: actions/setup-java@v4
       with:

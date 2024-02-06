@@ -33,10 +33,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
     # Create an incrementing version number based on the branch and thing we are building
     # e.g. for any project doing a release on `main`, this would store a magic tag named
     # bn-<project>-main-X, where X is the incrementing build number for that prefix.
