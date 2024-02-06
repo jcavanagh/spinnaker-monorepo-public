@@ -4,7 +4,7 @@
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "app/scripts/modules",
+    "baseUrl": "packages",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "jsx": "react",
