@@ -68,11 +68,11 @@ jobs:
           CLEAN_REF="${REF#release-}"
           echo "release-train-suffixed=$CLEAN_REF" >> "$GITHUB_OUTPUT"
           
-          CLEAN_REF="${CLEAN_REF%.x}"
+          RELEASE_TRAIN="${CLEAN_REF%.x}"
           echo "build-number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "release-train=$CLEAN_REF" >> "$GITHUB_OUTPUT"
+          echo "release-train=$RELEASE_TRAIN" >> "$GITHUB_OUTPUT"
           
-          VERSION="$CLEAN_REF-$BUILD_NUMBER"
+          VERSION="$RELEASE_TRAIN-$BUILD_NUMBER"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           
           IS_RELEASE="false"
@@ -82,3 +82,10 @@ jobs:
           echo "is-release=$IS_RELEASE" >> "$GITHUB_OUTPUT"
           
           echo "tag=${{ inputs.project }}-$VERSION" >> "$GITHUB_OUTPUT"
+          
+          echo "### Version Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "__Version__ $VERSION" >> "$GITHUB_STEP_SUMMARY"
+          echo "__Is Release?__ $IS_RELEASE" >> "$GITHUB_STEP_SUMMARY"
+          echo "__Build Number__ $BUILD_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+          echo "__Release Train:__ $RELEASE_TRAIN" >> "$GITHUB_STEP_SUMMARY"
+          echo "__Release Train (suffixed):__ $CLEAN_REF" >> "$GITHUB_STEP_SUMMARY"
