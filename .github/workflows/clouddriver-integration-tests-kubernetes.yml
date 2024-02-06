@@ -1,6 +1,13 @@
 name: Kubernetes Integration Tests
 
-on: workflow_call
+on:
+  workflow_call:
+
+  push:
+    branches:
+      - main
+    paths:
+      - 'clouddriver/**'
 
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Xmx6g -Xms6g

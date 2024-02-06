@@ -38,12 +38,15 @@ on:
 jobs:
   version:
     uses: ./.github/workflows/version.yml
+    if: github.event_name != 'pull_request'
     with:
       project: ${{ inputs.project }}
     secrets: inherit
 
-  build-and-publish:
+  build:
     runs-on: ubuntu-latest
+    # For PRs, this prevents the `version` job from showing up in the checks list
+    if: always()
     needs:
       - version
     steps:

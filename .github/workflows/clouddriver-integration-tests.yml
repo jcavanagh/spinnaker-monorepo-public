@@ -1,12 +1,11 @@
 name: Clouddriver Integration Tests
 
 on:
+  workflow_call:
+
   push:
     branches:
       - main
-    paths:
-      - 'clouddriver/**'
-  pull_request:
     paths:
       - 'clouddriver/**'
 
