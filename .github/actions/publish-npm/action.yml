@@ -47,7 +47,8 @@ runs:
         # Instead of automating PRs to bump versions, just rewrite them in the build workspace and publish that
         rewrite_package_version() {
           echo "Rewriting $1 with version: ${{ inputs.version }} and publishing to registry ${{ inputs.registry }}"
-          cat "$1" | jq '.version = "'"${{ inputs.version }}"'"' | jq '.publishConfig.registry = "${{ inputs.registry }}"' > "$1"
+          # jq can't pipe output directly into the same file, so echo the result of a subshell instead 
+          echo $(cat "$1" | jq '.version = "'"${{ inputs.version }}"'"' | jq '.publishConfig.registry = "${{ inputs.registry }}"') > "$1"
         }
 
         for file in $(find ./${{ inputs.project }} -type d -name node_modules -prune -o -name 'package.json' -print); do
