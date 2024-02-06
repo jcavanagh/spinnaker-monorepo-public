@@ -49,8 +49,6 @@ task test(type: YarnTask) {
 
 task webpack(type: YarnTask) {
   dependsOn "yarn"
-  dependsOn "runLinters"
-  dependsOn "test"
 
   yarnCommand = ["build"]
   environment = [
@@ -64,4 +62,6 @@ webpack.outputs.dir file('build/webpack')
 
 task build {
   dependsOn "webpack"
+  dependsOn "runLinters"
+  dependsOn "test"
 }

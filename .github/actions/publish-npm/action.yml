@@ -37,7 +37,8 @@ runs:
         rewrite_package_version() {
           # NPM insists on the version being written into package.json
           # Instead of automating PRs to bump versions, just rewrite it in the build workspace and publish that
-          cat "$1" | jq '.version = "'"${{ inputs.version }}"'"' | jq '.publishConfig.registry = "${{ inputs.registry }}"'
+          echo "Rewriting $1 with version: ${{ inputs.version }} and publishing to registry ${{ inputs.registry }}"
+          cat "$1" | jq '.version = "'"${{ inputs.version }}"'"' | jq '.publishConfig.registry = "${{ inputs.registry }}"' > "$1"
         }
 
         for file in $(find ./${{ inputs.project }} -type d -name node_modules -prune -o -name 'package.json' -print); do
@@ -49,6 +50,7 @@ runs:
       env:
         NODE_ENV: production
       shell: bash
+      working-directory: ${{ inputs.project }}
       run: npx lerna publish from-git --yes --ignore-scripts
 
     - name: Non-Lerna Publish
@@ -56,4 +58,5 @@ runs:
       env:
         NODE_ENV: production
       shell: bash
+      working-directory: ${{ inputs.project }}
       run: npm publish
