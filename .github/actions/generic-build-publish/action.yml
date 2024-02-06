@@ -102,7 +102,7 @@ runs:
       uses: ./.github/actions/publish-npm
       with:
         project: ${{ inputs.project }}
-        version: ${{ steps.version.outputs.version }}
+        version: ${{ steps.version.outputs.semver }}
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Create Tag
