@@ -34,13 +34,21 @@ runs:
         username: _json_key
         password: ${{ inputs.gar-json-key }}
 
-    - name: Build distribution for containerization
+    - name: Build Java distribution for containerization
       if: inputs.project != 'deck' && inputs.project != 'deck-kayenta'
       env:
         ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
       shell: bash
       run: |
         ./gradlew :${{ inputs.project }}:${{ inputs.project }}-web:installDist
+
+    - name: Build JS distribution for containerization
+      if: inputs.project == 'deck' || inputs.project == 'deck-kayenta'
+      env:
+        ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
+      shell: bash
+      run: |
+        ./gradlew :${{ inputs.project }}:webpack
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
