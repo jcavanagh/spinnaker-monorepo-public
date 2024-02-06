@@ -35,6 +35,7 @@ runs:
         password: ${{ inputs.gar-json-key }}
 
     - name: Build distribution for containerization
+      if: inputs.project != 'deck' && inputs.project != 'deck-kayenta'
       env:
         ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
       shell: bash
