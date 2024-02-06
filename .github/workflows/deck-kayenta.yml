@@ -18,7 +18,7 @@ on:
       - 'deck-kayenta/**'
 
 jobs:
-  deck:
+  deck-kayenta:
     uses: ./.github/workflows/generic-build-publish.yml
     with:
       project: deck-kayenta
