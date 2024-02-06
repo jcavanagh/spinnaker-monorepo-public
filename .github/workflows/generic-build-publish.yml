@@ -77,9 +77,10 @@ jobs:
         run: |
           ./gradlew --stacktrace ':${{ inputs.project }}:build'
 
-      # Containers should be built in PRs to ensure that Dockerfiles are functioning properly
+      # Containers should generally be built in PRs to ensure that Dockerfiles are functioning properly
       - name: Build/Publish Docker containers
         uses: ./.github/actions/publish-docker
+        if: ${{ inputs.publish-containers != 'false' }}
         with:
           project: ${{ inputs.project }}
           version: ${{ needs.version.outputs.version || 'SNAPSHOT' }}
