@@ -36,7 +36,7 @@ runs:
 
     - name: Initialize NPM GCP Auth
       shell: bash
-      run: npx google-artifactregistry-auth --credential-config ./${{ inputs.project }}/.npmrc
+      run: npx google-artifactregistry-auth --credential-config="./${{ inputs.project }}/.npmrc"
 
     - name: Rewrite package.json files
       env:
