@@ -52,7 +52,7 @@ runs:
         suffix: ${{ format('{0}-{1}', inputs.project, github.ref_name) }}
         # Only push events should increase the build number
         # Workflow re-runs should not increase the build number
-        skip-increment: ${{ github.event_name != 'push' || env.GITHUB_RUN_ATTEMPT != '1' }}
+        skip-increment: ${{ github.event_name != 'push' || (github.event_name == 'push' && env.GITHUB_RUN_ATTEMPT != '1') }}
 
     # Output the version and its components for the caller to reference
     - name: Output build version
@@ -82,7 +82,7 @@ runs:
         if [[ "$IS_RELEASE" == 'true' ]]; then
           SEMVER="$VERSION"
         else
-          SEMVER="0.0.0-$RELEASE_TRAIN.$BUILD_NUMBER"
+          SEMVER="0.0.0-$VERSION"
         fi
         echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
         

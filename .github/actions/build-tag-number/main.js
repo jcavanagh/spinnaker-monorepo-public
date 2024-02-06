@@ -147,7 +147,7 @@ function main() {
     const path = 'BUILD_NUMBER/BUILD_NUMBER';
     const prefix = env.INPUT_PREFIX ? `${env.INPUT_PREFIX}-` : '';
     const suffix = env.INPUT_SUFFIX ? `-${env.INPUT_SUFFIX}` : '';
-    const skipIncrement = env.INPUT_SKIP_INCREMENT === 'true';
+    const skipIncrement = env['INPUT_SKIP-INCREMENT'] === 'true';
 
     //See if we've already generated the build number and are in later steps...
     if (fs.existsSync(path)) {
