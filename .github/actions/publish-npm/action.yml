@@ -17,7 +17,6 @@ inputs:
     default: https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/npm
   gar-json-key:
     description: Google Artifact Registry JSON key
-    required: true
 
 runs:
   using: "composite"
@@ -29,14 +28,24 @@ runs:
       run: |
         ./gradlew :${{ inputs.project }}:webpack
 
+    - name: Login to Google Cloud
+      uses: google-github-actions/auth@v2
+      if: inputs.gar-json-key != ''
+      with:
+        credentials_json: ${{ inputs.gar-json-key }}
+
+    - name: Initialize NPM GCP Auth
+      shell: bash
+      run: npx google-artifactregistry-auth
+
     - name: Rewrite package.json files
       env:
         NODE_ENV: production
       shell: bash
       run: |
+        # NPM insists on the version being written into package.json
+        # Instead of automating PRs to bump versions, just rewrite them in the build workspace and publish that
         rewrite_package_version() {
-          # NPM insists on the version being written into package.json
-          # Instead of automating PRs to bump versions, just rewrite it in the build workspace and publish that
           echo "Rewriting $1 with version: ${{ inputs.version }} and publishing to registry ${{ inputs.registry }}"
           cat "$1" | jq '.version = "'"${{ inputs.version }}"'"' | jq '.publishConfig.registry = "${{ inputs.registry }}"' > "$1"
         }
