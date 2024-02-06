@@ -14,7 +14,7 @@ inputs:
     required: true
   registry:
     description: NPM registry to publish to
-    default: https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/npm
+    default: https://us-west2-npm.pkg.dev/spinnaker-monorepo-test/npm/
   gar-json-key:
     description: Google Artifact Registry JSON key
 
@@ -34,9 +34,9 @@ runs:
       with:
         credentials_json: ${{ inputs.gar-json-key }}
 
-    - name: Initialize NPM GCP Auth
-      shell: bash
-      run: npx google-artifactregistry-auth --credential-config="./${{ inputs.project }}/.npmrc"
+#    - name: Initialize NPM GCP Auth
+#      shell: bash
+#      run: npx google-artifactregistry-auth --repo-config="./${{ inputs.project }}/.npmrc" --credential-config="./${{ inputs.project }}/.npmrc"
 
     - name: Rewrite package.json files
       env:
