@@ -45,7 +45,7 @@ runs:
     - name: Generate build version
       uses: ./.github/actions/build-tag-number
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ inputs.github-token }}
         suffix: ${{ format('{0}-{1}', inputs.project, github.ref_name) }}
         # Only push events should increase the build number
         # Workflow re-runs should not increase the build number
