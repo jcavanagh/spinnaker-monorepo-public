@@ -24,8 +24,9 @@ on:
 
 jobs:
   rosco:
-    uses: ./.github/workflows/generic-build-publish.yml
-    with:
-      project: rosco
-      publish: ${{ github.event_name != 'pull_request' }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: rosco
+          publish: ${{ github.event_name != 'pull_request' }}

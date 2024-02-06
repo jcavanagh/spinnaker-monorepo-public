@@ -19,9 +19,10 @@ on:
 
 jobs:
   deck:
-    uses: ./.github/workflows/generic-build-publish.yml
-    with:
-      project: deck
-      publish: ${{ github.event_name != 'pull_request' }}
-      publish-npm: true
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: deck
+          publish: ${{ github.event_name != 'pull_request' }}
+          publish-npm: true

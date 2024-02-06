@@ -23,17 +23,14 @@ env:
   GCS_BUCKET: 'spinnaker-monorepo-test/spin'
 
 jobs:
-  version:
-    uses: ./.github/workflows/version.yml
-    with:
-      project: 'spin'
-
-  release:
+  spin:
     runs-on: ubuntu-latest
-    needs:
-      - version
     steps:
       - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/version
+        with:
+          project: spin
 
       - uses: actions/setup-go@v4
         with:

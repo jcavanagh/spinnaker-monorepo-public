@@ -1,7 +1,7 @@
 name: Clouddriver Integration Tests
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
   push:
     branches:
@@ -10,11 +10,9 @@ on:
       - 'clouddriver/**'
 
 env:
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Xmx6g -Xms6g
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Xmx10g -Xms10g
 
 jobs:
-  it-test-kubernetes:
-    uses: ./.github/workflows/clouddriver-integration-tests-kubernetes.yml
   it-test:
     runs-on: ubuntu-latest
     steps:

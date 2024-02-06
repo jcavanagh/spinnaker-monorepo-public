@@ -24,8 +24,9 @@ on:
 
 jobs:
   echo:
-    uses: ./.github/workflows/generic-build-publish.yml
-    with:
-      project: echo
-      publish: ${{ github.event_name != 'pull_request' }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: echo
+          publish: ${{ github.event_name != 'pull_request' }}

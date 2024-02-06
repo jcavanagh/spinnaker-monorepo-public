@@ -19,12 +19,13 @@ on:
 
 jobs:
   deck-kayenta:
-    uses: ./.github/workflows/generic-build-publish.yml
-    with:
-      project: deck-kayenta
-      publish: ${{ github.event_name != 'pull_request' }}
-      publish-containers: false
-      publish-debs: false
-      publish-halconfig: false
-      publish-npm: true
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: deck-kayenta
+          publish: ${{ github.event_name != 'pull_request' }}
+          publish-containers: false
+          publish-debs: false
+          publish-halconfig: false
+          publish-npm: true

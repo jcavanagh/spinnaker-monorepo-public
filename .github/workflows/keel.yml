@@ -27,9 +27,10 @@ env:
 
 jobs:
   keel:
-    uses: ./.github/workflows/generic-build-publish.yml
-    with:
-      project: keel
-      publish: ${{ github.event_name != 'pull_request' }}
-      publish-halconfig: false
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/generic-build-publish
+        with:
+          project: keel
+          publish: ${{ github.event_name != 'pull_request' }}
+          publish-halconfig: false

@@ -22,17 +22,14 @@ on:
       - 'rosco/**'
 
 jobs:
-  version:
-    uses: ./.github/workflows/version.yml
-    with:
-      project: spinnaker-libraries
-
   libraries-gar:
     runs-on: ubuntu-latest
-    needs:
-      - version
     steps:
       - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/version
+        with:
+          project: spinnaker-libraries
 
       - uses: actions/setup-java@v4
         with:
@@ -50,7 +47,7 @@ jobs:
 
       - name: Publish libs to Google Artifact Registry
         env:
-          ORG_GRADLE_PROJECT_version: ${{ needs.version.outputs.version }}
+          ORG_GRADLE_PROJECT_version: ${{ steps.version.outputs.version }}
           ORG_GRADLE_PROJECT_artifactRegistryPublishEnabled: true
           ORG_GRADLE_PROJECT_artifactRegistryPublishAptEnabled: false
           ORG_GRADLE_PROJECT_artifactRegistryPublishMavenEnabled: true
@@ -67,7 +64,7 @@ jobs:
 #    steps:
 #      - name: Publish Nexus libraries
 #        env:
-#          ORG_GRADLE_PROJECT_version: ${{ needs.version.outputs.version }}
+#          ORG_GRADLE_PROJECT_version: ${{ steps.version.outputs.version }}
 #          ORG_GRADLE_PROJECT_nexusPublishEnabled: true
 #          ORG_GRADLE_PROJECT_nexusStagingUrl: ${{  }}
 #          ORG_GRADLE_PROJECT_nexusSnapshotUrl: ${{  }}

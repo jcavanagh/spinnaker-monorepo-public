@@ -16,9 +16,6 @@ on:
         description: Dry run by default
         default: true
 
-env:
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Xmx6g -Xms6g
-
 jobs:
   spinnaker-release:
     runs-on: ubuntu-latest
