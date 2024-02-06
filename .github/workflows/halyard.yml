@@ -36,3 +36,5 @@ jobs:
           project: halyard
           publish: ${{ github.event_name != 'pull_request' }}
           publish-halconfig: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}

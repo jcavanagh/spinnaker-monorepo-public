@@ -32,3 +32,5 @@ jobs:
           project: clouddriver
           gradle-opts: -Dorg.gradle.daemon=false -Xmx10g -Xms10g
           publish: ${{ github.event_name != 'pull_request' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}

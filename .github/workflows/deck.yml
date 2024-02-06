@@ -27,3 +27,5 @@ jobs:
           project: deck
           publish: ${{ github.event_name != 'pull_request' }}
           publish-npm: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}

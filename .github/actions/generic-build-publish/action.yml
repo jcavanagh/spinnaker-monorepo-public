@@ -7,6 +7,11 @@ inputs:
   project:
     description: Project to build and (optionally) publish
     required: true
+  github-token:
+    description: Github token
+    required: true
+  gar-json-key:
+    description: Google Artifact Registry JSON key
   gradle-opts:
     description: Additional Gradle options set via GRADLE_OPTS
     default: -Dorg.gradle.daemon=false -Xmx2g -Xms2g
@@ -36,6 +41,7 @@ runs:
       if: github.event_name != 'pull_request'
       with:
         project: ${{ inputs.project }}
+        github-token: ${{ inputs.github-token }}
 
     # Always set up Java, for Gradle
     - uses: actions/setup-java@v4

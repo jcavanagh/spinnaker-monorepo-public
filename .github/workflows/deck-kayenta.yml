@@ -30,3 +30,5 @@ jobs:
           publish-debs: false
           publish-halconfig: false
           publish-npm: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}

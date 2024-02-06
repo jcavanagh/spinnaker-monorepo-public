@@ -31,6 +31,7 @@ jobs:
       - uses: ./.github/actions/version
         with:
           project: spin
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-go@v4
         with:

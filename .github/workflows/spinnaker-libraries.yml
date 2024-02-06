@@ -30,6 +30,7 @@ jobs:
       - uses: ./.github/actions/version
         with:
           project: spinnaker-libraries
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-java@v4
         with:
