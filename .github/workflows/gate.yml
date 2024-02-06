@@ -3,6 +3,13 @@ run-name: Gate ${{ github.ref_name }} (${{ github.event_name }})
 
 on:
   workflow_dispatch:
+    inputs:
+      skip-tests:
+        description: If specified, does not run tests
+        type: boolean
+        default: false
+
+
   push:
     branches:
       - main

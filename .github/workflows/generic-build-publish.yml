@@ -90,6 +90,7 @@ jobs:
           project: ${{ inputs.project }}
           is-release: ${{ needs.version.outputs.is-release }}
           version: ${{ needs.version.outputs.version }}
+          build-number: ${{ needs.version.outputs.build-number }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}
 
       - name: Publish Halconfig

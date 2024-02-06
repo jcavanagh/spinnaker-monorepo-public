@@ -12,6 +12,9 @@ inputs:
   version:
     description: The version to publish
     required: true
+  build-number:
+    description: The build number, used if not a release build
+    required: true
   gar-json-key:
     description: Google Artifact Registry JSON key
     required: true
@@ -30,7 +33,7 @@ runs:
       env:
         # If this is a release version, it's a valid deb version e.g. 2023.1.1
         # If this is a main build, the package name itself is suffixed with -main and the version is the sequential build number
-        ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
+        ORG_GRADLE_PROJECT_version: ${{ inputs.is-release == 'false' && inputs.build-number || inputs.version }}
         ORG_GRADLE_PROJECT_artifactRegistryPublishEnabled: true
         ORG_GRADLE_PROJECT_artifactRegistryPublishAptEnabled: true
         ORG_GRADLE_PROJECT_artifactRegistryPublishMavenEnabled: false

@@ -2,12 +2,14 @@ name: Spin CLI
 
 on:
   workflow_dispatch:
+
   push:
     branches:
       - main
       - release-*
     paths:
       - 'spin/**'
+
   pull_request:
     branches:
       - main
@@ -84,19 +86,14 @@ jobs:
           gcs_latest="$(curl -s https://storage.googleapis.com/spinnaker-artifacts/spin/latest)"
           release=${{ needs.version.outputs.version }}
           
-          # SemVer sort 1.22.0 as later than 1.21.1, and exclude the XML GCP sends if the file doesn't exist
-          latest="$(printf "%s\n%s" "${gcs_latest}" "${release}" | grep -v '<?xml' | sort -V | tail -n1)"
-          
           cat <<EOF
           gcs_latest: $gcs_latest
           release: $release
-          latest: $latest
           EOF
           
           mkdir -p dist/latests
-          echo "$latest" > dist/latests/latest
+          echo "$release" > dist/latests/latest
           if [[ '${{ needs.version.outputs.is-release }}' == 'true' ]]; then
-            # Bump latest version in MAJOR.MINOR
             echo "$release" > dist/latests/"${{ needs.version.outputs.release-train-suffixed }}-latest"
           fi
 
@@ -116,26 +113,10 @@ jobs:
           username: _json_key
           password: ${{ secrets.GAR_JSON_KEY }}
 
-      - name: Build and publish container image
-        uses: docker/build-push-action@v5
+      - name: Build/Publish Docker containers
+        uses: ./.github/actions/publish-docker
         with:
-          context: spin
-          file: spin/Dockerfile
-          push: true
-          build-args: |
-            "VERSION=${{ needs.version.outputs.version }}"
-          tags: |
-            "${{ env.CONTAINER_REGISTRY }}/spin:${{ needs.version.outputs.release-train-suffixed }}"
-            "${{ env.CONTAINER_REGISTRY }}/spin:${{ needs.version.outputs.version }}"
-
-      - name: Create GH release
-        if: needs.version.outputs.is-release == 'true'
-        uses: softprops/action-gh-release@v1
-        with:
-          body: |
-            ${{ needs.version.outputs.changelog }}
-          draft: false
-          name: Spin CLI ${{ needs.version.outputs.version }}
-          prerelease: false
-          tag_name: ${{ github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          project: 'spin'
+          version: ${{ needs.version.outputs.version }}
+          push: ${{ github.event_name != 'pull_request' }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
