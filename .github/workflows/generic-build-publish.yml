@@ -73,7 +73,7 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         env:
           GRADLE_OPTS: ${{ inputs.gradle-opts }}
-          ORG_GRADLE_PROJECT_version: ${{ needs.version.outputs.version }}
+          ORG_GRADLE_PROJECT_version: ${{ needs.version.outputs.version || 'SNAPSHOT' }}
         run: |
           ./gradlew --stacktrace ':${{ inputs.project }}:build'
 
@@ -82,7 +82,7 @@ jobs:
         uses: ./.github/actions/publish-docker
         with:
           project: ${{ inputs.project }}
-          version: ${{ needs.version.outputs.version }}
+          version: ${{ needs.version.outputs.version || 'SNAPSHOT' }}
           push: ${{ inputs.publish == 'true' && inputs.publish-containers == 'true' }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}
 
