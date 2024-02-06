@@ -211,15 +211,10 @@ If you are not wholesale-integrating OSS changes from your forks, you can still 
 
 ## Converting Existing Pull Requests
 
-TODO
+The best approach here is to merge them as they are, into individual repos.  Then, we pull those changes into the monorepo in batches.
 
 ## TODO
 
-- Git tagging in general
-- Deck build and publish
-- Spin CLI build and publish
-- One-button release with `buildtool` BOM/changelog generation
-- Figure out what all the new versions broke in Halyard
 - Rework plugin version compatibility checking against the new versioning system
 
 ## Bugs

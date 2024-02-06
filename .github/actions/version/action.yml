@@ -82,7 +82,7 @@ runs:
         if [[ "$IS_RELEASE" == 'true' ]]; then
           SEMVER="$VERSION"
         else
-          SEMVER="0.0.0-$VERSION"
+          SEMVER="0.0.0-$RELEASE_TRAIN.$BUILD_NUMBER"
         fi
         echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
         
