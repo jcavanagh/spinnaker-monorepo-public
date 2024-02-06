@@ -12,10 +12,48 @@ inputs:
   version:
     description: The version to publish
     required: true
+  registry:
+    description: NPM registry to publish to
+    default: https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/npm
   gar-json-key:
     description: Google Artifact Registry JSON key
     required: true
 
-# This is designed to run as part of another job that has already checked out the project and built it
 runs:
   using: "composite"
+  steps:
+    - name: Build JS
+      env:
+        ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
+      shell: bash
+      run: |
+        ./gradlew :${{ inputs.project }}:webpack
+
+    - name: Rewrite package.json files
+      env:
+        NODE_ENV: production
+      shell: bash
+      run: |
+        rewrite_package_version() {
+          # NPM insists on the version being written into package.json
+          # Instead of automating PRs to bump versions, just rewrite it in the build workspace and publish that
+          cat "$1" | jq '.version = "'"${{ inputs.version }}"'"' | jq '.publishConfig.registry = "${{ inputs.registry }}"'
+        }
+
+        for file in $(find ./${{ inputs.project }} -type d -name node_modules -prune -o -name 'package.json' -print); do
+          rewrite_package_version "$file"
+        done
+
+    - name: Lerna Publish
+      if: hashFiles(format('{0}/lerna.json', inputs.project)) != ''
+      env:
+        NODE_ENV: production
+      shell: bash
+      run: npx lerna publish from-git --yes --ignore-scripts
+
+    - name: Non-Lerna Publish
+      if: hashFiles(format('{0}/lerna.json', inputs.project)) == ''
+      env:
+        NODE_ENV: production
+      shell: bash
+      run: npm publish

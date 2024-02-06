@@ -23,4 +23,5 @@ jobs:
     with:
       project: deck
       publish: ${{ github.event_name != 'pull_request' }}
+      publish-npm: true
     secrets: inherit

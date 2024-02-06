@@ -104,6 +104,14 @@ jobs:
           version: ${{ needs.version.outputs.version }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}
 
+      - name: Publish NPM
+        if: inputs.publish == 'true' && inputs.publish-npm == 'true'
+        uses: ./.github/actions/publish-npm
+        with:
+          project: ${{ inputs.project }}
+          version: ${{ needs.version.outputs.version }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
+
       - name: Create Tag
         uses: actions/github-script@v7
         if: inputs.publish == 'true'

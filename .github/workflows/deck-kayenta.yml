@@ -23,4 +23,8 @@ jobs:
     with:
       project: deck-kayenta
       publish: ${{ github.event_name != 'pull_request' }}
+      publish-containers: false
+      publish-debs: false
+      publish-halconfig: false
+      publish-npm: true
     secrets: inherit
