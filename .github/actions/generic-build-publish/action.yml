@@ -36,7 +36,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: version
+    - id: version
       uses: ./.github/actions/version
       if: github.event_name != 'pull_request'
       with:
@@ -65,7 +65,7 @@ runs:
       shell: bash
       env:
         GRADLE_OPTS: ${{ inputs.gradle-opts }}
-        ORG_GRADLE_PROJECT_version: ${{ steps.version.outputs.version || 'SNAPSHOT' }}
+        ORG_GRADLE_PROJECT_version: ${{ steps.version.outputs.version }}
       run: |
         ./gradlew --stacktrace ':${{ inputs.project }}:build'
 
@@ -75,7 +75,8 @@ runs:
       if: ${{ inputs.publish-containers != 'false' }}
       with:
         project: ${{ inputs.project }}
-        version: ${{ steps.version.outputs.version || 'SNAPSHOT' }}
+        version: ${{ steps.version.outputs.version }}
+        release-train: ${{ steps.version.outputs.release-train-suffixed }}
         push: ${{ inputs.publish == 'true' && inputs.publish-containers == 'true' }}
         gar-json-key: ${{ inputs.gar-json-key }}
 

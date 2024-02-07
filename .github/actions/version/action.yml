@@ -34,7 +34,7 @@ outputs:
     value: ${{ steps.version.outputs.tag }}
   build-url:
     description: A link back to the Github Action run
-    value: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    value: ${{ steps.version.outputs.build-url }}
 
 runs:
   using: "composite"
@@ -86,6 +86,9 @@ runs:
         fi
         echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
         
+        BUILD_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        echo "build-url=$BUILD_URL" >> "$GITHUB_OUTPUT"
+        
         echo "### Version Info" >> "$GITHUB_STEP_SUMMARY"
         echo "| | |" >> "$GITHUB_STEP_SUMMARY"
         echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
@@ -94,3 +97,4 @@ runs:
         echo "| __Is Release__ | $IS_RELEASE |" >> "$GITHUB_STEP_SUMMARY"
         echo "| __Build Number__ | $BUILD_NUMBER |" >> "$GITHUB_STEP_SUMMARY"
         echo "| __Release Train__ | $RELEASE_TRAIN ($CLEAN_REF) |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| __Build URL__ | $BUILD_URL |" >> "$GITHUB_STEP_SUMMARY"
