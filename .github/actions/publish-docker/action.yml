@@ -60,11 +60,11 @@ runs:
     - name: Process Inputs
       shell: bash
       run: |
-        if [[ ${{ hashFiles(format('{0}/Dockerfile.java11.slim', inputs.project)) }} != '' ]]; then
+        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.slim', inputs.project)) }}' != '' ]]; then
           echo "has-slim-java11=true" >> $GITHUB_ENV
         fi
         
-        if [[ ${{ hashFiles(format('{0}/Dockerfile.java11.ubuntu', inputs.project)) }} != '' ]]; then
+        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.ubuntu', inputs.project)) }}' != '' ]]; then
           echo "has-ubuntu-java11=true" >> $GITHUB_ENV
         fi
 
