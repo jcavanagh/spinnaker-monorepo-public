@@ -150,12 +150,12 @@ runs:
         echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.release-train }}-latest |" >> "$GITHUB_STEP_SUMMARY"
         echo "| __Ubuntu__ | ${{ steps.docker-ubuntu.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu |" >> "$GITHUB_STEP_SUMMARY"
         
-        if [[ ${{ env.has-slim-java11 }} == 'true' ]]; then
+        if [[ '${{ env.has-slim-java11 }}' == 'true' ]]; then
           echo "| __Slim (java11)__ | ${{ steps.docker-slim-java11.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11 |" >> "$GITHUB_STEP_SUMMARY"
           echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-slim-java11 |" >> "$GITHUB_STEP_SUMMARY"
           echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.release-train }}-latest-java11 |" >> "$GITHUB_STEP_SUMMARY"
         fi
         
-        if [[ ${{ env.has-ubuntu-java11 }} == 'true' ]]; then
+        if [[ '${{ env.has-ubuntu-java11 }}' == 'true' ]]; then
           echo "| __Ubuntu (java11)__ | ${{ steps.docker-ubuntu-java11.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu-java11 |" >> "$GITHUB_STEP_SUMMARY"
         fi

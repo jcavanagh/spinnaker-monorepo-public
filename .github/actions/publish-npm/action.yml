@@ -28,15 +28,7 @@ runs:
       run: |
         ./gradlew :${{ inputs.project }}:webpack
 
-#    - name: Login to Google Cloud
-#      uses: google-github-actions/auth@v2
-#      if: contains(inputs.registry, '.pkg.dev')
-#      with:
-#        credentials_json: ${{ inputs.gar-json-key }}
-
     - name: Rewrite package.json files
-      env:
-        NODE_ENV: production
       shell: bash
       run: |
         # NPM insists on the version being written into package.json
@@ -64,6 +56,7 @@ runs:
           echo "//${{ inputs.registry }}:email=not.valid@email.com" >> "$1"
         }
 
+        # All non-dependency `package.json` files in the tree must be updated with the synthetic version pre-publish
         for file in $(find ./${{ inputs.project }} -type d -name node_modules -prune -o -name 'package.json' -print); do
           rewrite_package_version "$file"
         done
@@ -72,9 +65,13 @@ runs:
           rewrite_npmrc "./${{ inputs.project }}/.npmrc"
         fi
 
-#    - name: Initialize NPM GCP Auth
-#      shell: bash
-#      run: npx google-artifactregistry-auth --repo-config='./${{ inputs.project }}/.npmrc' --credential-config='./${{ inputs.project }}/.npmrc'
+    - name: Setup publishing to npmjs.org
+      if: contains(inputs.registry, '.npmjs.org')
+      env:
+        NODE_ENV: production
+      shell: bash
+      run: |
+        npm config set //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
 
     - name: Lerna Publish
       if: hashFiles(format('{0}/lerna.json', inputs.project)) != ''
