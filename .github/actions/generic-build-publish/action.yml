@@ -12,6 +12,8 @@ inputs:
     required: true
   gar-json-key:
     description: Google Artifact Registry JSON key
+  gar-npm-password:
+    description: Google Artifact Registry NPM password
   gradle-opts:
     description: Additional Gradle options set via GRADLE_OPTS
     default: -Dorg.gradle.daemon=false -Xmx2g -Xms2g
@@ -104,7 +106,7 @@ runs:
       with:
         project: ${{ inputs.project }}
         version: ${{ steps.version.outputs.semver }}
-        gar-json-key: ${{ secrets.GAR_NPM_PASSWORD }}
+        gar-npm-password: ${{ inputs.gar-npm-password }}
 
     - name: Create Tag
       uses: actions/github-script@v7
