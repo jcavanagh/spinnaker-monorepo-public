@@ -79,7 +79,7 @@ runs:
         NODE_ENV: production
       shell: bash
       working-directory: ${{ inputs.project }}
-      run: npx lerna publish from-package --no-git-reset --force-publish --registry https://${{ inputs.registry }} --yes --ignore-scripts
+      run: npx lerna publish from-git --no-git-reset --force-publish --yes --ignore-scripts
 
     - name: Non-Lerna Publish
       if: hashFiles(format('{0}/lerna.json', inputs.project)) == ''
