@@ -25,6 +25,7 @@ jobs:
       - uses: ./.github/actions/generic-build-publish
         with:
           project: deck
+          build-command: ':deck:webpack'
           publish: ${{ github.event_name != 'pull_request' }}
           publish-npm: true
           github-token: ${{ secrets.GITHUB_TOKEN }}

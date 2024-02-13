@@ -9,6 +9,9 @@ inputs:
   github-token:
     description: Github token
     required: true
+  skip-increment:
+    description: If true, do not allow any incrementing of the version
+    default: 'false'
 
 outputs:
   build-number:
@@ -52,7 +55,7 @@ runs:
         suffix: ${{ format('{0}-{1}', inputs.project, github.ref_name) }}
         # Only push or workflow_dispatch events should increase the build number
         # Workflow re-runs should not increase the build number
-        skip-increment: ${{ github.event_name == 'pull_request' || (github.event_name != 'pull_request' && github.run_attempt != '1') }}
+        skip-increment: ${{ inputs.skip-increment == 'true' || github.event_name == 'pull_request' || (github.event_name != 'pull_request' && github.run_attempt != '1') }}
 
     # Output the version and its components for the caller to reference
     - name: Output build version

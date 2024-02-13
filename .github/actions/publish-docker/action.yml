@@ -15,6 +15,10 @@ inputs:
   version:
     description: The version to publish
     required: true
+  build-command:
+    description: Gradle command to run to prepare the container.  Defaults to `:<project>:<project>-web:installDist`
+  build-args:
+    description: Newline-separated list of build args to forward to Docker
   container-registry:
     description: Destination container registry
     default: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
@@ -33,21 +37,41 @@ runs:
         username: _json_key
         password: ${{ inputs.gar-json-key }}
 
-    - name: Build Java distribution for containerization
-      if: inputs.project != 'deck'
-      env:
-        ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
+    - name: Process Inputs
       shell: bash
       run: |
-        ./gradlew :${{ inputs.project }}:${{ inputs.project }}-web:installDist
+        if [[ '${{ inputs.build-command }}' != '' ]]; then
+          echo "gradle-build-command='${{ inputs.build-command }}'" >> "$GITHUB_ENV"
+        else
+          echo "gradle-build-command=':${{ inputs.project }}:${{ inputs.project }}-web:installDist'" >> "$GITHUB_ENV"
+        fi
+        
+        if [[ '${{ hashFiles(format('{0}/Dockerfile', inputs.project)) }}' != '' ]]; then
+          echo "has-standard=true" >> $GITHUB_ENV
+        fi
+        
+        if [[ '${{ hashFiles(format('{0}/Dockerfile.slim', inputs.project)) }}' != '' ]]; then
+          echo "has-slim=true" >> $GITHUB_ENV
+        fi
+        
+        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.slim', inputs.project)) }}' != '' ]]; then
+          echo "has-slim-java11=true" >> $GITHUB_ENV
+        fi
+        
+        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.ubuntu', inputs.project)) }}' != '' ]]; then
+          echo "has-ubuntu=true" >> $GITHUB_ENV
+        fi
+        
+        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.ubuntu', inputs.project)) }}' != '' ]]; then
+          echo "has-ubuntu-java11=true" >> $GITHUB_ENV
+        fi
 
-    - name: Build JS distribution for containerization
-      if: inputs.project == 'deck'
+    - name: Run build to produce container artifacts
       env:
         ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
       shell: bash
       run: |
-        ./gradlew :${{ inputs.project }}:webpack
+        ./gradlew ${{ env.gradle-build-command }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -57,18 +81,27 @@ runs:
       with:
         version: latest
 
-    - name: Process Inputs
-      shell: bash
-      run: |
-        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.slim', inputs.project)) }}' != '' ]]; then
-          echo "has-slim-java11=true" >> $GITHUB_ENV
-        fi
-        
-        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.ubuntu', inputs.project)) }}' != '' ]]; then
-          echo "has-ubuntu-java11=true" >> $GITHUB_ENV
-        fi
+    - name: Build and publish standard container image
+      if: env.has-standard == 'true'
+      uses: docker/build-push-action@v5
+      id: docker-standard
+      with:
+        context: ${{ inputs.project }}
+        file: ${{ inputs.project }}/Dockerfile.slim
+        platforms: linux/amd64,linux/arm64
+        push: ${{ inputs.push == 'true' }}
+        build-args: ${{ inputs.build-args }}
+        tags: |
+          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}"
+          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.release-train }}-latest"
+        labels: |
+          "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
+          "org.opencontainers.image.revision=${{ github.sha }}"
+          "org.opencontainers.image.version=${{ inputs.version }}"
+          "io.spinnaker.ci-build=${{ inputs.build-url }}"
 
     - name: Build and publish slim container image
+      if: env.has-slim == 'true'
       uses: docker/build-push-action@v5
       id: docker-slim
       with:
@@ -76,6 +109,7 @@ runs:
         file: ${{ inputs.project }}/Dockerfile.slim
         platforms: linux/amd64,linux/arm64
         push: ${{ inputs.push == 'true' }}
+        build-args: ${{ inputs.build-args }}
         tags: |
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}"
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-slim"
@@ -87,6 +121,7 @@ runs:
           "io.spinnaker.ci-build=${{ inputs.build-url }}"
 
     - name: Build and publish ubuntu container image
+      if: env.has-ubuntu == 'true'
       uses: docker/build-push-action@v5
       id: docker-ubuntu
       with:
@@ -94,6 +129,7 @@ runs:
         file: ${{ inputs.project }}/Dockerfile.ubuntu
         platforms: linux/amd64,linux/arm64
         push: ${{ inputs.push == 'true' }}
+        build-args: ${{ inputs.build-args }}
         tags: |
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu"
         labels: |
@@ -112,6 +148,7 @@ runs:
         file: ${{ inputs.project }}/Dockerfile.slim
         platforms: linux/amd64,linux/arm64
         push: ${{ inputs.push == 'true' }}
+        build-args: ${{ inputs.build-args }}
         tags: |
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11"
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11-slim"
@@ -131,6 +168,7 @@ runs:
         file: ${{ inputs.project }}/Dockerfile.ubuntu
         platforms: linux/amd64,linux/arm64
         push: ${{ inputs.push == 'true' }}
+        build-args: ${{ inputs.build-args }}
         tags: |
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11-ubuntu"
         labels: |
@@ -145,10 +183,21 @@ runs:
         echo "### Docker Publishing" >> "$GITHUB_STEP_SUMMARY"
         echo "| Type | Image SHA | Tag |" >> "$GITHUB_STEP_SUMMARY"
         echo "| --- | --- | --- |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Slim__ | ${{ steps.docker-slim.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
-        echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-slim |" >> "$GITHUB_STEP_SUMMARY"
-        echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.release-train }}-latest |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Ubuntu__ | ${{ steps.docker-ubuntu.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu |" >> "$GITHUB_STEP_SUMMARY"
+        
+        if [[ '${{ env.has-standard }}' == 'true' ]]; then
+          echo "| __Standard__ | ${{ steps.docker-standard.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.release-train }}-latest |" >> "$GITHUB_STEP_SUMMARY"
+        fi
+        
+        if [[ '${{ env.has-slim }}' == 'true' ]]; then
+          echo "| __Slim__ | ${{ steps.docker-slim.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-slim |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.release-train }}-latest |" >> "$GITHUB_STEP_SUMMARY"
+        fi
+        
+        if [[ '${{ env.has-ubuntu }}' == 'true' ]]; then
+          echo "| __Ubuntu__ | ${{ steps.docker-ubuntu.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu |" >> "$GITHUB_STEP_SUMMARY"
+        fi
         
         if [[ '${{ env.has-slim-java11 }}' == 'true' ]]; then
           echo "| __Slim (java11)__ | ${{ steps.docker-slim-java11.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11 |" >> "$GITHUB_STEP_SUMMARY"

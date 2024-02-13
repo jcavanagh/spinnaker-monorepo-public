@@ -79,6 +79,7 @@ runs:
         project: ${{ inputs.project }}
         version: ${{ steps.version.outputs.version }}
         release-train: ${{ steps.version.outputs.release-train-suffixed }}
+        build-url: ${{ steps.version.outputs.build-url }}
         push: ${{ inputs.publish == 'true' && inputs.publish-containers == 'true' }}
         gar-json-key: ${{ inputs.gar-json-key }}
 

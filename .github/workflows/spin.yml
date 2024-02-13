@@ -103,21 +103,12 @@ jobs:
           destination: ${{ env.GCS_BUCKET }}
           parent: false
 
-      - name: Login to GAR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY_REGION }}
-          username: _json_key
-          password: ${{ secrets.GAR_JSON_KEY }}
-
       - name: Build and publish container image
-        uses: docker/build-push-action@v5
+        uses: ./.github/actions/publish-docker
         with:
-          context: .
-          file: spin/Dockerfile
-          push: true
-          build-args: |
-            "VERSION=${{ steps.version.outputs.version }}"
-          tags: |
-            "${{ env.CONTAINER_REGISTRY }}/spin:${{ steps.version.outputs.version }}"
-            "${{ env.CONTAINER_REGISTRY }}/spin:${{ steps.version.outputs.release-train-suffixed }}-latest"
+          project: spin
+          version: ${{ steps.version.outputs.version }}
+          release-train: ${{ steps.version.outputs.release-train-suffixed }}
+          build-url: ${{ steps.version.outputs.build-url }}
+          push: ${{ github.event_name != 'pull_request' }}
+          gar-json-key: ${{ secrets.GAR_JSON_KEY }}
