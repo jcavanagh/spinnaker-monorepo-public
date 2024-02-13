@@ -19,6 +19,8 @@ inputs:
   gradle-opts:
     description: Additional Gradle options set via GRADLE_OPTS
     default: -Dorg.gradle.daemon=false -Xmx2g -Xms2g
+  docker-build-command:
+    description: Custom build command for building Docker distributions
 
   # Publish args
   publish:
@@ -80,6 +82,7 @@ runs:
         version: ${{ steps.version.outputs.version }}
         release-train: ${{ steps.version.outputs.release-train-suffixed }}
         build-url: ${{ steps.version.outputs.build-url }}
+        build-command: ${{ inputs.docker-build-command }}
         push: ${{ inputs.publish == 'true' && inputs.publish-containers == 'true' }}
         gar-json-key: ${{ inputs.gar-json-key }}
 

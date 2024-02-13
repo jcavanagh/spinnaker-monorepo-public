@@ -16,9 +16,11 @@ inputs:
     description: The version to publish
     required: true
   build-command:
-    description: Gradle command to run to prepare the container.  Defaults to `:<project>:<project>-web:installDist`
+    description: Gradle command to run to prepare the container.  Defaults to `:<project>:<project>-web:installDist`.  Set to 'false' to skip build.
   build-args:
     description: Newline-separated list of build args to forward to Docker
+  build-url:
+    description: Link to build that produced this container
   container-registry:
     description: Destination container registry
     default: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
@@ -67,6 +69,7 @@ runs:
         fi
 
     - name: Run build to produce container artifacts
+      if: ${{ env.gradle-build-command != 'false' }}
       env:
         ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
       shell: bash
