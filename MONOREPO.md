@@ -72,7 +72,8 @@ If you do not have access to any of these things, please DM me!
     - This may not be ideal - it is likely better to use Lerna versioning and incremental publishing, though its assumptions around tagging and committed values aren't exactly aligned with 
   - Deck package versions are also aligned - all published under the same version, regardless of which packages changed
 - Tooling to allow pulling and integrating changes from individual repos via automated or on-demand pull requests to the monorepo
-- Tooling to allow a user to port existing individual-repo PRs in a guided fashion
+- Tooling to allow a user to port existing individual-repo PRs in a guided fashion\
+- Fully automated release tooling via the `spinnaker-release` custom action
 
 #### TODO
 
