@@ -108,6 +108,7 @@ jobs:
         with:
           project: spin
           version: ${{ steps.version.outputs.version }}
+          build-command: 'false'
           release-train: ${{ steps.version.outputs.release-train-suffixed }}
           build-url: ${{ steps.version.outputs.build-url }}
           push: ${{ github.event_name != 'pull_request' }}
