@@ -4,6 +4,8 @@ This summarizes the content, structure, maintenance, and TODOs of this Spinnaker
 
 Original RFC: https://github.com/spinnaker/governance/pull/336
 
+See also: [ADOPTION.md](https://github.com/jcavanagh/spinnaker-monorepo-public/ADOPTION.md)
+
 ## Links
 
 If you do not have access to any of these things, please DM me!
@@ -55,6 +57,27 @@ If you do not have access to any of these things, please DM me!
   - Various small tweaks to the SQL tests were required after this, but they now all run successfully
 - Mass-deletion of unused Gradle wrappers, property pins, .github, .idea, and etc as detailed below
 
+### Feb 2024 Update 
+- Java 11 and 17 container publishing for applicable projects
+  - The `publish-docker` composite action will auto-detect the presence of Java 11 Dockerfiles and publish as needed
+- Most GHA consolidated into custom composite actions over reusable workflows
+  - Most of the limitations of composition actions have been fixed by Github over the past several months
+    - The current main drawback to composite actions is a lack of direct access to repository `secrets` - they must be passed in as inputs like any non-composite action
+    - Issue link: https://github.com/actions/toolkit/issues/1168
+  - However, the main limitation of reusable workflows is much harder to deal with - each reusable workflow is a separate job, and additional steps cannot easily be added around it
+- Deck publishing flow is now fully integrated
+  - No more version bump PRs - prerelease NPM versions are published on every `deck` or `deck-kayenta` publish (see `npm` repo above for examples) 
+  - Versions are somewhat synthetic - rewritten dynamically and committed during the build, pre-publish
+    - We can change the in-repo committed version to something like `0.0.0` for all packages
+    - This may not be ideal - it is likely better to use Lerna versioning and incremental publishing, though its assumptions around tagging and committed values aren't exactly aligned with 
+  - Deck package versions are also aligned - all published under the same version, regardless of which packages changed
+- Tooling to allow pulling and integrating changes from individual repos via automated or on-demand pull requests to the monorepo
+- Tooling to allow a user to port existing individual-repo PRs in a guided fashion
+
+#### TODO
+
+- May need to go back to incremental Deck package publishing
+
 ## Feedback Requested
 
 - General feedback on versions
@@ -66,16 +89,13 @@ If you do not have access to any of these things, please DM me!
 - Deck versions and internal version bumps
   - Just using a single Lerna version for all packages - no bump PRs, everything gets shipped just like Java libraries
 - Halyard will now publish on the same release train as Spinnaker
-- Halyard versions are no longer referenced in the BOM
+- Halyard compatible versions are no longer referenced in the BOM
   - Users are meant to just use the same Halyard version as the release train
 - Default run tasks in root build.gradle have combined output
   - Not really a great way to fix this in Gradle, but still wanted a "just start it" button
   - Still have an initial configuration problem
   - May be better as a docker-compose setup or something
-- Whether to "bury" defaults in reusable workflows or put them somewhere else?
-  - e.g. Java version defaults in `version.yml`
 - Cost design of GHA workflows - better to have more complex conditions in steps and fewer jobs?
-- Where and how does GH spinnakerbot run?  How can we update it to also point to this repo?
 
 ## Workflow Structure
 
@@ -104,6 +124,7 @@ Three major components are `spinnaker-libraries.yml`, `generic-build-publish.yml
 - Consolidated all `kotlin.gradle` and `kotlin-test.gradle` files
 - Split off detekt configuration from `kotlin.gradle` in Kork/Orca, moved remainder to root
 - Remove all `defaultTasks` declarations from composites - those have new entry points defined in the root `build.gradle`
+- Removed all `deck` scripting around version bumps and bump PRs
 
 ## OSS Transition
 
@@ -209,24 +230,6 @@ If you are already wholesale-integrating OSS changes into your forks, you can ju
 If you are not wholesale-integrating OSS changes from your forks, you can still pick changes from the OSS monorepo to your private monorepo using the standard cherry-pick process.
 
 
-## Converting Existing Pull Requests
-
-The best approach here is to merge them as they are, into individual repos.  Then, we pull those changes into the monorepo in batches.
-
 ## TODO
 
 - Rework plugin version compatibility checking against the new versioning system
-
-## Bugs
-
-- Error from SpinnakerNewIdeaProjectPlugin - tries to read from subtree .git folders and outputs an error
-- Spotless pre-commit hooks get added in all subtrees - needs to move to root
-- Gradle project names for echo and spinnaker-gradle-project don't show up right in IntelliJ
-- Per-project Gradle cache keys?
-- Some gradle errors regarding optimizations disabled regarding protobufs:
-
-    ```
-    > Task :clouddriver:clouddriver-cloudfoundry:processResources
-    Execution optimizations have been disabled for task ':clouddriver:clouddriver-cloudfoundry:processResources' to ensure correctness due to the following reasons:
-    - Gradle detected a problem with the following location: '/Users/jcavanagh/dev/spinnaker-monorepo-public/clouddriver/clouddriver-cloudfoundry/build/extracted-protos/main'. Reason: Task ':clouddriver:clouddriver-cloudfoundry:processResources' uses this output of task ':clouddriver:clouddriver-cloudfoundry:extractProto' without declaring an explicit or implicit dependency. This can lead to incorrect results being produced, depending on what order the tasks are executed. Please refer to https://docs.gradle.org/7.6.1/userguide/validation_problems.html#implicit_dependency for more details about this problem.
-    ```

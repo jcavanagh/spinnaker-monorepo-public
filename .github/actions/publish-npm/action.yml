@@ -65,7 +65,9 @@ runs:
           rewrite_npmrc "./${{ inputs.project }}/.npmrc"
         fi
         
-        git commit -am "Bump to version ${{ inputs.version }}" --author "spinnakerbot <spinnakerbot@spinnaker.io>"
+        git config user.name "spinnakerbot"
+        git config user.email "spinnakerbot@spinnaker.io"
+        git commit -am "Bump to version ${{ inputs.version }}"
 
     - name: Setup publishing to npmjs.org
       if: contains(inputs.registry, '.npmjs.org')
