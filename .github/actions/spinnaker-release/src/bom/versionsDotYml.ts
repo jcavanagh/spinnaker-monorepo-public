@@ -1,7 +1,7 @@
 import * as Path from 'path';
 import { parse } from 'yaml';
 import { StoredYml } from '../gcp/stored_yml';
-import * as util from '../util'
+import * as util from '../util';
 
 export interface IllegalVersion {
   reason: string;
@@ -27,7 +27,7 @@ export function fromYml(yamlStr: string): VersionsDotYml {
       parsed.illegalVersions,
       parsed.latestHalyard,
       parsed.latestSpinnaker,
-      parsed.versions
+      parsed.versions,
     );
   }
   throw new Error(`Invalid versions.yml - does not conform: ${yamlStr}`);
@@ -93,7 +93,10 @@ export class VersionsDotYml extends StoredYml {
   }
 
   override getBucketFilePath(): string {
-    return Path.join(util.getInput('versions-yml-bucket-path'), this.getFilename());
+    return Path.join(
+      util.getInput('versions-yml-bucket-path'),
+      this.getFilename(),
+    );
   }
 
   override getFilename(): string {
