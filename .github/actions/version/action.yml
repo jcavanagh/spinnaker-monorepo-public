@@ -66,7 +66,7 @@ runs:
         
         if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
           # Default ref names for PRs are <number>/merge which doesn't play nice with things like Docker tags
-          REF=pr.${{ github.event.number }}
+          REF=pr${{ github.event.number }}
         fi
         
         CLEAN_REF="${REF#release-}"
@@ -98,12 +98,14 @@ runs:
         BUILD_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         echo "build-url=$BUILD_URL" >> "$GITHUB_OUTPUT"
         
-        echo "### Version Info" >> "$GITHUB_STEP_SUMMARY"
-        echo "| | |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Version__ | $VERSION |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Semver-ish__ | $SEMVER |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Is Release__ | $IS_RELEASE |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Build Number__ | $BUILD_NUMBER |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Release Train__ | $RELEASE_TRAIN ($CLEAN_REF) |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Build URL__ | $BUILD_URL |" >> "$GITHUB_STEP_SUMMARY"
+        if [[ '${{ github.event_name }}' != 'pull_request' ]]; then
+          echo "### Version Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "| | |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Version__ | $VERSION |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Semver-ish__ | $SEMVER |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Is Release__ | $IS_RELEASE |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Build Number__ | $BUILD_NUMBER |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Release Train__ | $RELEASE_TRAIN ($CLEAN_REF) |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Build URL__ | $BUILD_URL |" >> "$GITHUB_STEP_SUMMARY"
+        fi
