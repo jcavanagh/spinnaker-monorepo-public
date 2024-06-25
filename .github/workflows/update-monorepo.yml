@@ -1,0 +1,22 @@
+name: Update Monorepo
+
+on:
+  workflow_dispatch:
+    inputs:
+      remote-ref:
+        description: Remote ref to merge from
+        default: master
+
+jobs:
+  update-monorepo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.remote-ref == 'master' && 'main' || inputs.remote-ref  }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/update-monorepo
+        with:
+          remote-ref: ${{ inputs.remote-ref }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -66,6 +66,7 @@ runs:
 
     - name: Summarize
       shell: bash
+      if: github.event_name != 'pull_request'
       run: |
         echo "### Deb Publishing" >> "$GITHUB_STEP_SUMMARY"
         echo "| | |" >> "$GITHUB_STEP_SUMMARY"

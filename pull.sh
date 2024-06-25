@@ -3,8 +3,10 @@ set -e
 
 # Usage:
 # ./scripts/pull.sh [repo1] [repo2] [repo...] [-r|--ref REF] [-o|--ours]
-# -r|--ref: Specify a ref to use for all remotes (default: master, as that's the)
-# -o|--ours: Keep our side of any conflicts.  This should only be used to forcibly reintegrate a tree that has been caught up by other means.
+# -r|--ref: Specify a ref to use for all remotes (default: master)
+# -o|--ours: Keep our side of any conflicts.
+#            This should only be used to reintegrate a tree that has already been caught up by other means.
+#            Always keeping the "ours" side isn't safe in situations where genuine conflicts can still be present.
 
 # Examples:
 
