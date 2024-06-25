@@ -29,7 +29,7 @@ export abstract class Service {
       if (versionParts.length == 3) {
         // Release branches are named release-<year>.<major>.x
         return `release-${versionParts[0]}.${versionParts[1]}.x`;
-      } else if(versionParts.length == 2 && versionParts[0] == 'main') {
+      } else if (versionParts.length == 2 && versionParts[0] == 'main') {
         return 'main';
       } else {
         throw new Error(
@@ -80,7 +80,7 @@ export abstract class Service {
           let version = subtokens[1];
           if (name == this.name) {
             // Allow shorthand version input - clouddriver:main-1 resolves to tag clouddriver-main-1
-            if(!version.startsWith(name)) {
+            if (!version.startsWith(name)) {
               version = `${name}-${version}`;
             }
             const tag = git.parseTag(version);

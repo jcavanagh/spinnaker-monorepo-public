@@ -62055,8 +62055,8 @@ function findTag(service, branch) {
     }
     const prefix = `${service}-${branch}-`;
     const tags = gitCmdMulti(`git tag`)
-        ?.filter(it => it.startsWith(prefix))
-        ?.filter(it => {
+        ?.filter((it) => it.startsWith(prefix))
+        ?.filter((it) => {
         // Ensure this matches standard tag format - all other tags should be disregarded
         const split = it.split('-');
         return split.length === 3 && !isNaN(parseInt(split[2], 10));

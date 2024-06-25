@@ -1,7 +1,7 @@
-import * as core from '@actions/core'
+import * as core from '@actions/core';
 
 export function getInput(name: string): string {
-  if(!name) return '';
+  if (!name) return '';
 
   // Find inputs from environment variables in both hyphenated and underscored forms
   const dehyphenated = name.replaceAll('-', '_');

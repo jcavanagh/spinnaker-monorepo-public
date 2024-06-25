@@ -14,7 +14,7 @@
     "strict": true,
     "skipLibCheck": true,
     "newLine": "lf",
-    "lib": ["ES2021.String"]
+    "lib": ["ES2021.String", "es2015.promise"]
   },
   "exclude": ["./dist", "./node_modules"]
 }

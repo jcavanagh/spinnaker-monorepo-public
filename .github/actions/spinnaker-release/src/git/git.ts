@@ -52,11 +52,11 @@ export function findTag(service: string, branch: string): Tag | undefined {
 
   const prefix = `${service}-${branch}-`;
   const tags = gitCmdMulti(`git tag`)
-    ?.filter(it => it.startsWith(prefix))
-    ?.filter(it => {
+    ?.filter((it) => it.startsWith(prefix))
+    ?.filter((it) => {
       // Ensure this matches standard tag format - all other tags should be disregarded
       const split = it.split('-');
-      return split.length === 3 && !isNaN(parseInt(split[2], 10))
+      return split.length === 3 && !isNaN(parseInt(split[2], 10));
     })
     ?.sort((a, b) => {
       // Basic sorting fails beyond single-digit numbers, e.g. 10 < 2, so sort by parts
@@ -66,8 +66,8 @@ export function findTag(service: string, branch: string): Tag | undefined {
       const bNum = parseInt(b.split('-')[2]);
 
       // Sort in reverse order
-      if(aNum > bNum) return -1;
-      if(aNum < bNum) return 1;
+      if (aNum > bNum) return -1;
+      if (aNum < bNum) return 1;
       return 0;
     });
 

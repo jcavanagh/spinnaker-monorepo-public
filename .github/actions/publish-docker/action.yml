@@ -182,6 +182,7 @@ runs:
 
     - name: Summarize
       shell: bash
+      if: github.event_name != 'pull_request'
       run: |
         echo "### Docker Publishing" >> "$GITHUB_STEP_SUMMARY"
         echo "| Type | Image SHA | Tag |" >> "$GITHUB_STEP_SUMMARY"
