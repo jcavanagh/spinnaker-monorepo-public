@@ -15,14 +15,16 @@ export abstract class StoredFile {
   }
 
   async getCurrent(): Promise<string | null> {
-    core.info(`Fetching from GCS: bucket=${this.getBucket()} file=${this.getBucketFilePath()}`)
+    core.info(
+      `Fetching from GCS: bucket=${this.getBucket()} file=${this.getBucketFilePath()}`,
+    );
     try {
       const response = await storageClient()
         .bucket(this.getBucket())
         .file(this.getBucketFilePath())
         .download();
       return response.toString();
-    } catch(e) {
+    } catch (e) {
       core.error(e);
       return null;
     }
@@ -37,8 +39,10 @@ export abstract class StoredFile {
       core.info(
         `Successfully published ${this.getFilename()} to GCP: ${this.getBucket()}/${this.getBucketFilePath()}`,
       );
-    } catch(e) {
-      core.error(`Failed publishing ${this.getFilename()} to GCP: ${this.getBucket()}/${this.getBucketFilePath()}`);
+    } catch (e) {
+      core.error(
+        `Failed publishing ${this.getFilename()} to GCP: ${this.getBucket()}/${this.getBucketFilePath()}`,
+      );
       core.error(e);
     }
   }

@@ -27,7 +27,7 @@ function generateBom(): Bom {
 async function generateVersionsYml(): Promise<VersionsDotYml> {
   core.info('Running versions.yml generator');
   const versionsYml = await fromCurrent();
-  if(util.getInput('add-to-versions-yml') == 'true') {
+  if (util.getInput('add-to-versions-yml') == 'true') {
     versionsYml.addVersion(util.getInput('version'));
   }
   return versionsYml;
