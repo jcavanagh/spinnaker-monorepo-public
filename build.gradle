@@ -129,3 +129,27 @@ tasks.register('run') {
   dependsOn 'orca'
   dependsOn 'rosco'
 }
+
+// Tasks to build one or all JS projects
+tasks.register('buildUpdateMonorepo') {
+  doLast {
+    exec {
+      workingDir '.github/actions/update-monorepo'
+      commandLine 'bash', '-c', 'npm i && npm run build'
+    }
+  }
+}
+
+tasks.register('buildSpinnakerRelease') {
+  doLast {
+    exec {
+      workingDir '.github/actions/spinnaker-release'
+      commandLine 'bash', '-c', 'npm i && npm run build'
+    }
+  }
+}
+
+tasks.register('buildJs') {
+  dependsOn 'buildUpdateMonorepo'
+  dependsOn 'buildSpinnakerRelease'
+}

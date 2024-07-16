@@ -6,6 +6,10 @@ on:
       remote-ref:
         description: Remote ref to merge from
         default: master
+      merge-with-ours:
+        description: Merge with the --ours strategy
+        type: boolean
+        default: true
 
 jobs:
   update-monorepo:

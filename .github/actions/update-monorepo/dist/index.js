@@ -31154,7 +31154,8 @@ async function fetchRemote(remote, ref) {
     return (0, util_1.execWithOutput)(`git fetch -n ${remote} ${ref}`);
 }
 async function mergeRemote(remote, ref) {
-    const result = await (0, util_1.execWithOutput)(`git merge --edit --strategy subtree -X subtree=${remote} ${remote}/${ref}`, undefined, {
+    const withOurs = (0, util_1.getInput)('merge-with-ours') == 'true' ? ' -X ours' : '';
+    const result = await (0, util_1.execWithOutput)(`git merge --edit --strategy subtree -X subtree=${remote}${withOurs} ${remote}/${ref}`, undefined, {
         GIT_EDITOR: './.github/actions/update-monorepo/subtree_pull_editor.sh',
         GIT_SUBTREE: remote,
         GIT_SUBTREE_REMOTE: `${remote}/${ref}`,

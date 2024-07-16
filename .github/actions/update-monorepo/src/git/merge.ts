@@ -13,8 +13,9 @@ async function fetchRemote(remote: string, ref: string) {
 }
 
 async function mergeRemote(remote: string, ref: string) {
+  const withOurs = getInput('merge-with-ours') == 'true' ? ' -X ours' : '';
   const result = await execWithOutput(
-    `git merge --edit --strategy subtree -X subtree=${remote} ${remote}/${ref}`,
+    `git merge --edit --strategy subtree -X subtree=${remote}${withOurs} ${remote}/${ref}`,
     undefined,
     {
       GIT_EDITOR: './.github/actions/update-monorepo/subtree_pull_editor.sh',
