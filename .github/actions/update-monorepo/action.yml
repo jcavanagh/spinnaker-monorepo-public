@@ -16,6 +16,9 @@ inputs:
     default: master
   local-ref:
     description: Local ref to merge into
+  merge-with-ours:
+    description: Use the -X ours option with the subtree strategy
+    default: true
   git-email:
     description: Git author email to commit merges with
     default: spinbot@spinnaker.io

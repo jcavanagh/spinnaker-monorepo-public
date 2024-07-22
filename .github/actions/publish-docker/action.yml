@@ -48,10 +48,6 @@ runs:
           echo "gradle-build-command=:${{ inputs.project }}:${{ inputs.project }}-web:installDist" >> "$GITHUB_ENV"
         fi
         
-        if [[ '${{ hashFiles(format('{0}/Dockerfile', inputs.project)) }}' != '' ]]; then
-          echo "has-standard=true" >> $GITHUB_ENV
-        fi
-        
         if [[ '${{ hashFiles(format('{0}/Dockerfile.slim', inputs.project)) }}' != '' ]]; then
           echo "has-slim=true" >> $GITHUB_ENV
         fi
