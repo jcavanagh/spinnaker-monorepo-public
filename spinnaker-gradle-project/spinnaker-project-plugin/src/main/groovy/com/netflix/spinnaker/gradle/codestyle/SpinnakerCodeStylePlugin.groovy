@@ -52,6 +52,10 @@ class SpinnakerCodeStylePlugin implements Plugin<Project> {
           project.getTasks()
             .matching { it.name == JavaBasePlugin.CHECK_TASK_NAME }
             .all { it.dependsOn("spotlessApply") }
+        } else {
+          project.getTasks()
+            .matching { it.name == JavaBasePlugin.CHECK_TASK_NAME }
+            .all { it.dependsOn("spotlessCheck") }
         }
 
         spotless.java(new Action<JavaExtension>() {
