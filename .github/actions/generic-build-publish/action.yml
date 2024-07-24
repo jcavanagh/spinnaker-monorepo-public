@@ -18,9 +18,9 @@ inputs:
     description: npmjs.org publishing token
   gradle-opts:
     description: Additional Gradle options set via GRADLE_OPTS
+    default: -Xmx2g -Xms2g
   gradle-cmd-opts:
     description: Additional Gradle options set via the command line
-    default: -Xmx2g -Xms2g
   docker-build-command:
     description: Custom build command for building Docker distributions
   integration-test:
