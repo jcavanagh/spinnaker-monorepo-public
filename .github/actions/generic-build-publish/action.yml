@@ -88,12 +88,12 @@ runs:
         platforms: local
         build-args: ${{ inputs.build-args }}
         tags: |
-          ${{ inputs.project }}:${{ steps.version.version }}-integration-test"
+          ${{ inputs.project }}:${{ steps.version.outputs.version }}-integration-test"
 
     - name: Container Integration Tests (test)
       if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
       env:
-        FULL_DOCKER_IMAGE_NAME: ${{ inputs.project }}:${{ steps.version.version }}-integration-test"
+        FULL_DOCKER_IMAGE_NAME: ${{ inputs.project }}:${{ steps.version.outputs.version }}-integration-test"
         GRADLE_OPTS: ${{ inputs.gradle-opts }}
       shell: bash
       run: ./gradlew ${{ inputs.gradle-cmd-opts }} -Dorg.gradle.daemon=false :${{ inputs.project }}:${{ inputs.project }}-integration:test
