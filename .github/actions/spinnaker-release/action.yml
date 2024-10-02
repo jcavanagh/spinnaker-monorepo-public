@@ -82,6 +82,6 @@ outputs:
   bom-url:
     description: Link to published BoM
   versions-yml:
-    description: `versions.yml` contents
+    description: Contents of `versions.yml`
   versions-yml-url:
     description: Link to published `versions.yml`
