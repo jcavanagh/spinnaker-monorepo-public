@@ -13,6 +13,8 @@ on:
         description: Add this version to `versions.yml` for Halyard?
         type: boolean
         default: true
+      branch:
+        description: Reference branch for image selection and versioning.
       dry-run:
         type: boolean
         description: Dry run?
@@ -22,6 +24,11 @@ jobs:
   spinnaker-release:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
       - id: version
         uses: ./.github/actions/version
         if: inputs.spinnaker-version == ''
@@ -47,7 +54,7 @@ jobs:
           previous_version: ${{ inputs.previous-version }}
           dry_run: ${{ inputs.dry-run }}
 
-      - name: Create release
+      - name: Create Github release
         if: inputs.dry-run != 'false'
         uses: actions/create-release@v1
         env:
@@ -62,4 +69,33 @@ jobs:
 
       - name: Summarize
         shell: bash
+        if: github.event_name != 'pull_request'
         run: |
+          echo "### Release Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "| | |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Version__ | ${{ inputs.spinnaker-version }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __BoM__ | ${{ steps.spinnaker-release.outputs.bom-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Changelog__ | ${{ steps.spinnaker-release.outputs.bom-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __versions.yml__ | ${{ steps.spinnaker-release.outputs.versions-yml-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "<details>"
+          echo "<summary>BoM Contents</summary>"
+          echo ""
+          echo "```"
+          echo "${{ steps.spinnaker-release-outputs.bom }}"
+          echo "```"
+          echo "</details>"
+          echo "<details>"
+          echo "<summary>Changelog Contents</summary>"
+          echo ""
+          echo "```"
+          echo "${{ steps.spinnaker-release-outputs.changelog }}"
+          echo "```"
+          echo "</details>"
+          echo "<details>"
+          echo "<summary>Changelog Contents</summary>"
+          echo ""
+          echo "```"
+          echo "${{ steps.spinnaker-release-outputs.versions-yml }}"
+          echo "```"
+          echo "</details>"
