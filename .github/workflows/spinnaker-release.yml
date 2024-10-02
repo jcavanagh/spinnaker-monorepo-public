@@ -14,7 +14,7 @@ on:
         type: boolean
         default: true
       branch:
-        description: Reference branch for image selection and versioning.
+        description: (optional) Manually specifyc reference branch for image selection and versioning, if the inference from the above version does not work.
       dry-run:
         type: boolean
         description: Dry run?
@@ -50,6 +50,7 @@ jobs:
         id: spinnaker-release
         uses: ./.github/actions/spinnaker-release
         with:
+          branch: ${{ inputs.branch }}
           version: ${{ env.spinnaker-version }}
           previous_version: ${{ inputs.previous-version }}
           dry_run: ${{ inputs.dry-run }}
