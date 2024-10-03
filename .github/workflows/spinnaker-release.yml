@@ -1,4 +1,5 @@
 name: Spinnaker Release
+run-name: Spinnaker Release (${{ inputs.spinnaker-version }} dry=${{ inputs.dry-run }})
 
 on:
   workflow_dispatch:
