@@ -112,7 +112,7 @@ runs:
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Publish Debian packages
-      if: inputs.publish == 'true' && inputs.publish-debs == 'true'
+      if: inputs.publish == 'true' && inputs.publish-debs == 'true' && steps.version.outputs.is-release == 'false'
       uses: ./.github/actions/publish-deb
       with:
         project: ${{ inputs.project }}

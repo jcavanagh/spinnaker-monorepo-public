@@ -41,8 +41,7 @@ runs:
 
     - name: Publish apt packages to Google Artifact Registry
       env:
-        # If this is a release version, it's a valid deb version e.g. 2023.1.1
-        # If this is a main build, the package name itself is suffixed with -main and the version is the sequential build number
+        # Deb versions are the release train and build number, e.g. main-1 or 1.35-1
         ORG_GRADLE_PROJECT_version: ${{ inputs.is-release != 'true' && inputs.build-number || inputs.version }}
         ORG_GRADLE_PROJECT_artifactRegistryPublishEnabled: 'true'
         ORG_GRADLE_PROJECT_artifactRegistryPublishAptEnabled: 'true'
@@ -50,7 +49,7 @@ runs:
         ORG_GRADLE_PROJECT_artifactRegistryAptProject: ${{ inputs.gar-apt-project }}
         ORG_GRADLE_PROJECT_artifactRegistryAptLocation: ${{ inputs.gar-apt-location }}
         ORG_GRADLE_PROJECT_artifactRegistryAptTempGcsBucket: ${{ inputs.gcs-temp-bucket }}
-        ORG_GRADLE_PROJECT_ospackageSuffix: ${{ inputs.is-release != 'true' && 'dev' || '' }}
+        ORG_GRADLE_PROJECT_ospackageSuffix: ${{ inputs.is-release != 'true' && '-dev' || '' }}
         GAR_JSON_KEY: ${{ inputs.gar-json-key }}
       shell: bash
       run: |
