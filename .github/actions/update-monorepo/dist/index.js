@@ -31227,7 +31227,7 @@ exports.setup = exports.createMergeBranchPr = exports.generatePrBody = exports.p
 const util_1 = __nccwpck_require__(2629);
 const github_1 = __nccwpck_require__(5438);
 const process = __importStar(__nccwpck_require__(7742));
-exports.github = (0, github_1.getOctokit)((0, util_1.getInput)('github-token'));
+exports.github = (0, github_1.getOctokit)((0, util_1.getInput)('github-pat'));
 // Convert a remote ref to a local ref
 function getLocalRef() {
     const remoteRef = (0, util_1.getInput)('remote-ref');

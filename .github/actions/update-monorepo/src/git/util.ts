@@ -3,7 +3,7 @@ import { getOctokit } from '@actions/github';
 import { MergeResult } from './types';
 import * as process from 'node:process';
 
-export const github = getOctokit(getInput('github-token'));
+export const github = getOctokit(getInput('github-pat'));
 
 // Convert a remote ref to a local ref
 export function getLocalRef() {

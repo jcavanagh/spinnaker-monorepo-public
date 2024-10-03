@@ -25,8 +25,8 @@ inputs:
   git-name:
     description: Git author name to commit merges with
     default: spinnakerbot
-  github-token:
-    description: Github token
+  github-pat:
+    description: Github PAT - NOT the GITHUB_TOKEN from GHA.  PRs created with GITHUB_TOKEN do not trigger PR Workflows.
     required: true
 
 outputs:
