@@ -2,7 +2,7 @@
 set -e
 
 # Usage:
-# ./scripts/pull.sh [repo1] [repo2] [repo...] [-r|--ref REF] [-o|--ours]
+# ./pull.sh [repo1] [repo2] [repo...] [-r|--ref REF] [-o|--ours]
 # -r|--ref: Specify a ref to use for all remotes (default: master)
 # -o|--ours: Keep our side of any conflicts.
 #            This should only be used to reintegrate a tree that has already been caught up by other means.
@@ -11,10 +11,10 @@ set -e
 # Examples:
 
 # Pull from Gate mirror from ref "master"
-# ./scripts/pull.sh gate
+# ./pull.sh gate
 
 # Pull from Clouddriver and Orca mirrors from ref "release-1.27.x"
-# ./scripts/pull.sh clouddriver orca -r release-1.27.x
+# ./pull.sh clouddriver orca -r release-1.27.x
 
 # Some repos do not have release branches
 MAIN_ONLY_PULLS=(deck-kayenta spinnaker-gradle-project)
@@ -72,7 +72,7 @@ function pull() {
   if ! git merge --edit --strategy subtree -X subtree=${prefix} ${STRATEGY_OPT} FETCH_HEAD;
   then
     # Write the finished message to a file if the merge fails
-    ./scripts/subtree_pull_editor.sh ./SUBTREE_MERGE_MSG
+    ./subtree_pull_editor.sh ./SUBTREE_MERGE_MSG
     echo "Merging $prefix failed - resolve conflicts and run 'git commit -a -F SUBTREE_MERGE_MSG', then re-run this"
     exit 1
   else
@@ -80,7 +80,7 @@ function pull() {
   fi
 }
 
-export GIT_EDITOR='./scripts/subtree_pull_editor.sh'
+export GIT_EDITOR='./subtree_pull_editor.sh'
 for repo in "${REPOS[@]}"; do
   pull "$repo"
 done
