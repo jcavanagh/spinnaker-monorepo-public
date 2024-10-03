@@ -41,8 +41,7 @@ runs:
 
     - name: Publish apt packages to Google Artifact Registry
       env:
-        # If this is a release version, it's a valid deb version e.g. 2023.1.1
-        # If this is a main build, the package name itself is suffixed with -main and the version is the sequential build number
+        # Deb versions are the release train and build number, e.g. main-1 or 1.35-1
         ORG_GRADLE_PROJECT_version: ${{ inputs.is-release != 'true' && inputs.build-number || inputs.version }}
         ORG_GRADLE_PROJECT_artifactRegistryPublishEnabled: 'true'
         ORG_GRADLE_PROJECT_artifactRegistryPublishAptEnabled: 'true'

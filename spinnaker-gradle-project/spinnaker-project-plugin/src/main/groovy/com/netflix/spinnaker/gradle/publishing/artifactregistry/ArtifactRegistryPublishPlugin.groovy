@@ -49,6 +49,9 @@ class ArtifactRegistryPublishPlugin implements Plugin<Project> {
     if (extension.aptEnabled().get()) {
       project.plugins.withType(SystemPackagingPlugin) {
         TaskProvider<Deb> debTask = project.tasks.named("buildDeb", Deb)
+        // Always rebuild the deb, even if the project contents have not changed
+        // Cache can return a debfile with an old version number, causing publishing problems
+        debTask.get().outputs.upToDateWhen { false }
         TaskProvider<Task> publishDeb = project.tasks.register("publishDebToArtifactRegistry", ArtifactRegistryDebPublishTask) {
           it.archiveFile = debTask.flatMap { it.archiveFile }
           it.uploadBucket = extension.aptTempGcsBucket()
