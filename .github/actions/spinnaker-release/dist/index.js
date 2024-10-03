@@ -61812,10 +61812,27 @@ class VersionsDotYml extends stored_yml_1.StoredYml {
         this.latestSpinnaker = latestSpinnaker;
         this.versions = versions;
     }
+    isSemVer(versionStr) {
+        if (!versionStr)
+            return false;
+        const split = versionStr.split('.');
+        if (split.length != 3)
+            return false;
+        if (isNaN(Number(split[0])) ||
+            isNaN(Number(split[1])) ||
+            isNaN(Number(split[2]))) {
+            return false;
+        }
+        return true;
+    }
     addVersion(versionStr) {
         // Check to see if we already have an entry for this version - no duplicates should be allowed
         if (this.versions.map((it) => it.version).some((it) => it === versionStr)) {
             throw new Error(`Version ${versionStr} already exists in versions.yml - cannot publish`);
+        }
+        // Halyard requires semver-style versions - do not allow anything else to be published
+        if (!this.isSemVer(versionStr)) {
+            throw new Error(`Version ${versionStr} is not in SemVer style - cannot publish`);
         }
         // Halyard builds with the rest of everything, and is now on the same version
         // So, we can generally simplify this block and only require one version string as input

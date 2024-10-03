@@ -72,11 +72,35 @@ export class VersionsDotYml extends StoredYml {
     this.versions = versions;
   }
 
+  isSemVer(versionStr: string): boolean {
+    if (!versionStr) return false;
+
+    const split = versionStr.split('.');
+    if (split.length != 3) return false;
+
+    if (
+      isNaN(Number(split[0])) ||
+      isNaN(Number(split[1])) ||
+      isNaN(Number(split[2]))
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
   addVersion(versionStr: string) {
     // Check to see if we already have an entry for this version - no duplicates should be allowed
     if (this.versions.map((it) => it.version).some((it) => it === versionStr)) {
       throw new Error(
         `Version ${versionStr} already exists in versions.yml - cannot publish`,
+      );
+    }
+
+    // Halyard requires semver-style versions - do not allow anything else to be published
+    if (!this.isSemVer(versionStr)) {
+      throw new Error(
+        `Version ${versionStr} is not in SemVer style - cannot publish`,
       );
     }
 

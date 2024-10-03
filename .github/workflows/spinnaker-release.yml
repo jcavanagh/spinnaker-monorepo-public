@@ -14,7 +14,7 @@ on:
         type: boolean
         default: true
       branch:
-        description: (optional) Manually specifyc reference branch for image selection and versioning, if the inference from the above version does not work.
+        description: (optional) Manually specify reference branch for image selection and versioning, if the inference from the above version does not work.
       dry-run:
         type: boolean
         description: Dry run?
