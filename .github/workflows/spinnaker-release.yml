@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       spinnaker-version:
-        description: (optional) Spinnaker release version, e.g. 2023.1.1.  If not specified, uses automated build numbering.
+        description: Spinnaker release version, e.g. 2023.1.1 or 1.36.1 or main.1
         type: string
       previous-version:
         description: (optional) Previous Spinnaker release version to use for changelogs.  If not specified, infers previous from the `spinnaker-version` input.
@@ -50,13 +50,14 @@ jobs:
         id: spinnaker-release
         uses: ./.github/actions/spinnaker-release
         with:
+          credentials-json: ${{ secrets.GAR_JSON_KEY }}
           branch: ${{ inputs.branch }}
           version: ${{ env.spinnaker-version }}
-          previous_version: ${{ inputs.previous-version }}
-          dry_run: ${{ inputs.dry-run }}
+          previous-version: ${{ inputs.previous-version }}
+          dry-run: ${{ inputs.dry-run }}
 
       - name: Create Github release
-        if: inputs.dry-run != 'false'
+        if: inputs.dry-run == 'false'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

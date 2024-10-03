@@ -61857,12 +61857,33 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.storageClient = void 0;
 const storage_1 = __nccwpck_require__(7577);
+const core = __importStar(__nccwpck_require__(2186));
 const util = __importStar(__nccwpck_require__(2629));
+const fs = __importStar(__nccwpck_require__(7147));
 let _storageClient = null;
+function getCredentials() {
+    // Can be content (in an action) or a path (elsewhere)
+    const credentialsJsonOrPath = util.getInput('credentials-json');
+    if (!credentialsJsonOrPath) {
+        throw new Error('No GCP credentials provided - please set option `credentials-json`');
+    }
+    const isJson = credentialsJsonOrPath.indexOf('{') !== -1;
+    const credentialsContent = isJson
+        ? credentialsJsonOrPath
+        : fs.readFileSync(credentialsJsonOrPath).toString();
+    try {
+        return JSON.parse(credentialsContent);
+    }
+    catch (e) {
+        core.error('Failed to parse GCP credentials');
+        throw e;
+    }
+}
 function storageClient() {
     if (!_storageClient) {
+        var credentials = getCredentials();
         _storageClient = new storage_1.Storage({
-            credentials: JSON.parse(util.getInput('credentials-json')),
+            credentials,
         });
     }
     return _storageClient;
