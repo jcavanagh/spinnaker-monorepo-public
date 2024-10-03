@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       remote-ref:
-        description: Remote ref to merge from
+        description: Remote ref to merge from (master, release-1.35.x, etc)
         default: master
       merge-with-ours:
         description: Merge with the --ours strategy

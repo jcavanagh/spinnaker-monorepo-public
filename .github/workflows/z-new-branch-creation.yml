@@ -1,4 +1,4 @@
-name: zNew Branch Creation
+name: New Branch Creation
 
 # There is an issue with push triggers where it does not trigger on new branches if there are path filters
 # This makes new release branches difficult, as we need an initial build

@@ -42,10 +42,10 @@ inputs:
     default: 'spinnaker-monorepo-test'
   bom-bucket-path:
     description: Path within the GCP bucket in which BoMs are stored
-    default: 'halconfig/boms'
+    default: 'boms'
   versions-yml-bucket-path:
     description: Path within the GCP bucket at which Halyard's `versions.yml` lives
-    default: 'halconfig'
+    default: ''
 
   # ArtifactSources defaults
   as-debian-repository:

@@ -11,8 +11,8 @@ cjson=$(cat "$HOME/monorepo/spinnaker-monorepo-test-gar.json")
 export INPUT_CREDENTIALS_JSON="$cjson"
 
 export INPUT_BUCKET='spinnaker-monorepo-test'
-export INPUT_BOM_BUCKET_PATH='halconfig/boms'
-export INPUT_VERSIONS_YML_BUCKET_PATH='halconfig'
+export INPUT_BOM_BUCKET_PATH='boms'
+export INPUT_VERSIONS_YML_BUCKET_PATH=''
 
 export INPUT_AS_DEBIAN_REPOSITORY='https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/apt'
 export INPUT_AS_DOCKER_REGISTRY='https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker'
