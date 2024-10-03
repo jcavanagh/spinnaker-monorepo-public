@@ -31285,7 +31285,7 @@ function generatePrBody(results) {
             // By default, the pull script merges `master`/`main`.  Release refs need an additional argument.
             const refArg = getLocalRef() == 'main' ? '' : `-r ${getLocalRef()} `;
             body += '\n```zsh\n';
-            body += `./scripts/pull.sh ${refArg}${result.repo}`;
+            body += `./pull.sh ${refArg}${result.repo}`;
             // The Git editor script will format the message with individual commits imported, so it's nice to read
             // Manual resolutions should use the output of that script as the commit message
             body +=
