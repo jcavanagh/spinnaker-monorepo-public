@@ -1,4 +1,5 @@
-name: New Branch Creation
+name: zNew Branch Creation
+run-name: New Branch Creation (${{ github.ref_name }})
 
 # There is an issue with push triggers where it does not trigger on new branches if there are path filters
 # This makes new release branches difficult, as we need an initial build
