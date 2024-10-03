@@ -50,12 +50,13 @@ runs:
     # Other artifacts (containers, debs) do not need to be published on every cycle, and use their event paths config.
     - name: Generate build version
       uses: ./.github/actions/build-tag-number
+      if: github.event_name != 'pull_request'
       with:
         token: ${{ inputs.github-token }}
         suffix: ${{ format('{0}-{1}', inputs.project, github.ref_name) }}
         # Only push or workflow_dispatch events should increase the build number
         # Workflow re-runs should not increase the build number
-        skip-increment: ${{ inputs.skip-increment == 'true' || github.event_name == 'pull_request' || (github.event_name != 'pull_request' && github.run_attempt != '1') }}
+        skip-increment: ${{ inputs.skip-increment == 'true' || github.run_attempt != '1' }}
 
     # Output the version and its components for the caller to reference
     - name: Output build version
@@ -67,6 +68,7 @@ runs:
         if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
           # Default ref names for PRs are <number>/merge which doesn't play nice with things like Docker tags
           REF=pr${{ github.event.number }}
+          BUILD_NUMBER=0
         fi
         
         CLEAN_REF="${REF#release-}"
