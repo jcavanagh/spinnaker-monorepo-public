@@ -56,14 +56,16 @@ export function findTag(service: string, branch: string): Tag | undefined {
     ?.filter((it) => {
       // Ensure this matches standard tag format - all other tags should be disregarded
       const split = it.split('-');
-      return split.length === 3 && !isNaN(parseInt(split[2], 10));
+      return split.length >= 3 && !isNaN(parseInt(split.slice(-1)[0], 10));
     })
     ?.sort((a, b) => {
       // Basic sorting fails beyond single-digit numbers, e.g. 10 < 2, so sort by parts
       // All tags should have three parts - service-branch-number, and the tags are prefiltered to fit that format
       // So, all we need to do is compare the third value
-      const aNum = parseInt(a.split('-')[2]);
-      const bNum = parseInt(b.split('-')[2]);
+      const aSplit = a.split('-');
+      const bSplit = b.split('-');
+      const aNum = parseInt(aSplit.slice(-1)[0]);
+      const bNum = parseInt(bSplit.slice(-1)[0]);
 
       // Sort in reverse order
       if (aNum > bNum) return -1;
