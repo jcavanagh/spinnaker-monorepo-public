@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Netflix, Inc.
+ * Copyright 2024 Harness Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/gradle/groovy.gradle"
+package com.netflix.spinnaker.config
 
-test {
-  useJUnitPlatform()
-}
+import org.springframework.boot.context.properties.ConfigurationProperties
 
-dependencies {
-  implementation(project(":orca-api"))
-  implementation(project(":orca-core"))
-  implementation(project(":orca-clouddriver"))
-
-  testImplementation(project(":orca-test"))
-  testImplementation(project(":orca-test-groovy"))
-
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-  testRuntimeOnly("net.bytebuddy:byte-buddy")
+@ConfigurationProperties("execution-repository.sql.pipeline-ref")
+class PipelineRefProperties {
+  /**
+   * Enables store pipelineTrigger into pipelineRefTrigger
+   */
+  var enabled: Boolean = false
 }
