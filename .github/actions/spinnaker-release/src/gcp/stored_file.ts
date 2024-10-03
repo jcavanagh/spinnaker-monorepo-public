@@ -15,13 +15,15 @@ export abstract class StoredFile {
   }
 
   async getCurrent(): Promise<string | null> {
-    core.info(
-      `Fetching from GCS: bucket=${this.getBucket()} file=${this.getBucketFilePath()}`,
-    );
+    return this.get(this.getBucket(), this.getBucketFilePath());
+  }
+
+  async get(bucket: string, bucketFilePath: string): Promise<string | null> {
+    core.info(`Fetching from GCS: bucket=${bucket} file=${bucketFilePath}`);
     try {
       const response = await storageClient()
-        .bucket(this.getBucket())
-        .file(this.getBucketFilePath())
+        .bucket(bucket)
+        .file(bucketFilePath)
         .download();
       return response.toString();
     } catch (e) {

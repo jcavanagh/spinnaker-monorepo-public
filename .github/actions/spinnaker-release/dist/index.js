@@ -61277,6 +61277,20 @@ class Bom extends stored_yml_1.StoredYml {
     setTimestamp(timestamp) {
         this.timestamp = timestamp;
     }
+    async getAtVersion(version) {
+        const filename = `${version}.yml`;
+        return this.get(this.getBucket(), Path.join(util.getInput('bom-bucket-path'), filename));
+    }
+    async publish() {
+        // Check if this BoM already exists, unless we are allowing overwrites
+        if (util.getInput('allow-bom-overwrite') !== 'true') {
+            const existing = await this.getCurrent();
+            if (existing) {
+                throw new Error(`Cannot create BoM ${this.version} - already exists, and option allow-bom-overwrite is not set.`);
+            }
+        }
+        return super.publish();
+    }
     getBucket() {
         return util.getInput('bucket');
     }
@@ -61328,16 +61342,17 @@ const all_1 = __nccwpck_require__(873);
 const util = __importStar(__nccwpck_require__(2629));
 const versionsDotYml_1 = __nccwpck_require__(7341);
 async function generate() {
-    const bom = generateBom();
+    const bom = await generateBom();
     const versionsYml = await generateVersionsYml();
     core.info(`Generated BoM: \n${bom.toString()}`);
     core.info(`Generated versions.yml: \n${versionsYml.toString()}`);
     await publish(bom, versionsYml);
 }
 exports.generate = generate;
-function generateBom() {
+async function generateBom() {
     core.info('Running BoM generator');
-    const bom = new bom_1.Bom(util.getInput('version'));
+    const version = util.getInput('version');
+    const bom = new bom_1.Bom(version);
     for (const service of all_1.services) {
         bom.setService(service);
     }
@@ -61798,6 +61813,10 @@ class VersionsDotYml extends stored_yml_1.StoredYml {
         this.versions = versions;
     }
     addVersion(versionStr) {
+        // Check to see if we already have an entry for this version - no duplicates should be allowed
+        if (this.versions.map((it) => it.version).some((it) => it === versionStr)) {
+            throw new Error(`Version ${versionStr} already exists in versions.yml - cannot publish`);
+        }
         // Halyard builds with the rest of everything, and is now on the same version
         // So, we can generally simplify this block and only require one version string as input
         this.versions.push({
@@ -61934,11 +61953,14 @@ class StoredFile {
         return process.env['RUNNER_TEMP'] ?? os.tmpdir();
     }
     async getCurrent() {
-        core.info(`Fetching from GCS: bucket=${this.getBucket()} file=${this.getBucketFilePath()}`);
+        return this.get(this.getBucket(), this.getBucketFilePath());
+    }
+    async get(bucket, bucketFilePath) {
+        core.info(`Fetching from GCS: bucket=${bucket} file=${bucketFilePath}`);
         try {
             const response = await (0, storage_1.storageClient)()
-                .bucket(this.getBucket())
-                .file(this.getBucketFilePath())
+                .bucket(bucket)
+                .file(bucketFilePath)
                 .download();
             return response.toString();
         }

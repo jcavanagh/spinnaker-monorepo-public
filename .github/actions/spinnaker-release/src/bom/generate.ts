@@ -5,7 +5,7 @@ import * as util from '../util';
 import { fromCurrent, VersionsDotYml } from './versionsDotYml';
 
 export async function generate(): Promise<void> {
-  const bom = generateBom();
+  const bom = await generateBom();
   const versionsYml = await generateVersionsYml();
 
   core.info(`Generated BoM: \n${bom.toString()}`);
@@ -13,10 +13,11 @@ export async function generate(): Promise<void> {
   await publish(bom, versionsYml);
 }
 
-function generateBom(): Bom {
+async function generateBom(): Promise<Bom> {
   core.info('Running BoM generator');
 
-  const bom = new Bom(util.getInput('version'));
+  const version = util.getInput('version');
+  const bom = new Bom(version);
   for (const service of services) {
     bom.setService(service);
   }

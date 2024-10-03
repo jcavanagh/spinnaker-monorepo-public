@@ -83,6 +83,28 @@ export class Bom extends StoredYml {
     this.timestamp = timestamp;
   }
 
+  async getAtVersion(version: string): Promise<string | null> {
+    const filename = `${version}.yml`;
+    return this.get(
+      this.getBucket(),
+      Path.join(util.getInput('bom-bucket-path'), filename),
+    );
+  }
+
+  override async publish(): Promise<void> {
+    // Check if this BoM already exists, unless we are allowing overwrites
+    if (util.getInput('allow-bom-overwrite') !== 'true') {
+      const existing = await this.getCurrent();
+      if (existing) {
+        throw new Error(
+          `Cannot create BoM ${this.version} - already exists, and option allow-bom-overwrite is not set.`,
+        );
+      }
+    }
+
+    return super.publish();
+  }
+
   override getBucket(): string {
     return util.getInput('bucket');
   }
