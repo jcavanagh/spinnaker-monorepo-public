@@ -2,6 +2,7 @@ name: Deck Kayenta
 run-name: Deck Kayenta ${{ github.ref_name }} (${{ github.event_name }})
 
 on:
+  workflow_call:
   workflow_dispatch:
 
   push:

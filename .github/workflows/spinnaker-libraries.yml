@@ -2,6 +2,7 @@ name: Spinnaker Libraries
 run-name: Libraries ${{ github.ref_name }}
 
 on:
+  workflow_call:
   workflow_dispatch:
   push:
     branches:

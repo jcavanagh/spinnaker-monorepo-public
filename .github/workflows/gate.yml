@@ -2,6 +2,7 @@ name: Gate
 run-name: Gate ${{ github.ref_name }} (${{ github.event_name }})
 
 on:
+  workflow_call:
   workflow_dispatch:
 
   push:

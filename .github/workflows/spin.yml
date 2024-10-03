@@ -1,6 +1,7 @@
 name: Spin CLI
 
 on:
+  workflow_call:
   workflow_dispatch:
 
   push:

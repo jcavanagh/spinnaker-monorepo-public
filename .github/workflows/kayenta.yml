@@ -2,6 +2,7 @@ name: Kayenta
 run-name: Kayenta ${{ github.ref_name }} (${{ github.event_name }})
 
 on:
+  workflow_call:
   workflow_dispatch:
 
   push:
