@@ -42,12 +42,6 @@ runs:
     - name: Process Inputs
       shell: bash
       run: |
-        if [[ '${{ inputs.build-command }}' != '' ]]; then
-          echo "gradle-build-command=${{ inputs.build-command }}" >> "$GITHUB_ENV"
-        else
-          echo "gradle-build-command=:${{ inputs.project }}:${{ inputs.project }}-web:installDist" >> "$GITHUB_ENV"
-        fi
-        
         if [[ '${{ hashFiles(format('{0}/Dockerfile.slim', inputs.project)) }}' != '' ]]; then
           echo "has-slim=true" >> $GITHUB_ENV
         fi
@@ -65,12 +59,12 @@ runs:
         fi
 
     - name: Run build to produce container artifacts
-      if: env.gradle-build-command != 'false'
+      if: inputs.build-command != 'false'
       env:
         ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
       shell: bash
       run: |
-        ./gradlew ${{ env.gradle-build-command }}
+        ./gradlew ${{ !inputs.build-command && format(':{0}:{0}-web:installDist', inputs.project) || inputs.build-command }}
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
