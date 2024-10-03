@@ -71,7 +71,7 @@ export function findTag(service: string, branch: string): Tag | undefined {
       return 0;
     });
 
-  if (!tags) {
+  if (!tags || !tags.length) {
     core.warning(`No tags found for prefix ${prefix}`);
     return undefined;
   }
