@@ -34,6 +34,6 @@ jobs:
           publish: ${{ github.event_name != 'pull_request' }}
           publish-halconfig: false
           integration-test: false
-          gradle-opts: '-Dorg.gradle.daemon=false -Xmx8g -Xms8g'
+          gradle-opts: '-Dorg.gradle.daemon=false -Xmx12g -Xms12g'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}
