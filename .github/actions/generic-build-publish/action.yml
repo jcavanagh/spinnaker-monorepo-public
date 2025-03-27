@@ -118,11 +118,11 @@ runs:
         release-train: ${{ steps.version.outputs.release-train-suffixed }}
         build-url: ${{ steps.version.outputs.build-url }}
         build-command: ${{ inputs.docker-build-command }}
-        push: ${{ inputs.publish == 'true' && inputs.publish-containers == 'true' }}
+        push: ${{ github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-containers == 'true' }}
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Publish Debian packages
-      if: inputs.publish == 'true' && inputs.publish-debs == 'true' && steps.version.outputs.is-release == 'false'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-debs == 'true' && steps.version.outputs.is-release == 'false'
       uses: ./.github/actions/publish-deb
       with:
         project: ${{ inputs.project }}
@@ -132,7 +132,7 @@ runs:
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Publish Halconfig
-      if: inputs.publish == 'true' && inputs.publish-halconfig == 'true'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-halconfig == 'true'
       uses: ./.github/actions/publish-halconfig
       with:
         project: ${{ inputs.project }}
@@ -140,7 +140,7 @@ runs:
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Publish NPM
-      if: inputs.publish == 'true' && inputs.publish-npm == 'true'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-npm == 'true'
       uses: ./.github/actions/publish-npm
       with:
         project: ${{ inputs.project }}
@@ -150,7 +150,7 @@ runs:
 
     - name: Create Tag
       uses: actions/github-script@v7
-      if: inputs.publish == 'true'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true'
       env:
         TAG: ${{ steps.version.outputs.tag }}
       with:
