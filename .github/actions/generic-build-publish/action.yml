@@ -111,7 +111,7 @@ runs:
     # Containers should generally be built in PRs to ensure that Dockerfiles are functioning properly
     - name: Build/Publish Docker containers
       uses: ./.github/actions/publish-docker
-      if: inputs.publish-containers != 'false'
+      if: inputs.publish == 'true' && inputs.publish-containers != 'false'
       with:
         project: ${{ inputs.project }}
         version: ${{ steps.version.outputs.version }}
