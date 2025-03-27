@@ -37,7 +37,7 @@ The following external resources can be specified with environment variables:
 - `API_HOST` overrides the default Spinnaker API host.
 - `AUTH_ENABLED` determines whether Deck will attempt to authenticate users via Gate.
 
-For example, `API_HOST=http://spinnaker.prod.netflix.net yarn start` will run Deck with `http://spinnaker.prod.netflix.net` as the API host.
+For example, `API_HOST=http://spinnaker.prod.netflix.net yarn start` will run Deck with `http://spinnaker.prod.netflix.net` as the API host.asdf
 
 ## Development
 
