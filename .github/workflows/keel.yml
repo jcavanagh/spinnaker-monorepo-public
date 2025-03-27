@@ -23,9 +23,6 @@ on:
       - 'fiat/**'
       - 'kork/**'
 
-env:
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Xmx8g -Xms8g
-
 jobs:
   keel:
     runs-on: ubuntu-latest
@@ -37,5 +34,6 @@ jobs:
           publish: ${{ github.event_name != 'pull_request' }}
           publish-halconfig: false
           integration-test: false
+          gradle-opts: '-Dorg.gradle.daemon=false -Xmx8g -Xms8g'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}
