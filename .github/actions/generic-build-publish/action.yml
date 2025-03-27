@@ -26,6 +26,8 @@ inputs:
   integration-test:
     description: If true, build an integration test container and run it
     default: 'true'
+  integration-test-build-command:
+    description: Gradle command to run to prepare the container when running integration tests.  Defaults to `:<project>:<project>-web:installDist`.
 
   # Publish args
   publish:
@@ -79,6 +81,14 @@ runs:
         ./gradlew ${{ inputs.gradle-cmd-opts }} -Dorg.gradle.daemon=false --stacktrace ':${{ inputs.project }}:build'
 
     # If configured, build a container, publish it locally, and run its tests
+    - name: Run build to produce container artifacts
+      if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
+      env:
+        ORG_GRADLE_PROJECT_version: ${{ steps.version.outputs.version }}
+      shell: bash
+      run: |
+        ./gradlew ${{ !inputs.integration-test-build-command && format(':{0}:{0}-web:installDist', inputs.project) || inputs.integration-test-build-command }}
+
     - name: Container Integration Tests (build)
       if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
       uses: docker/build-push-action@v5
