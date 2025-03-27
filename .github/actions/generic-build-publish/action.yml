@@ -26,6 +26,8 @@ inputs:
   integration-test:
     description: If true, build an integration test container and run it
     default: 'true'
+  integration-test-build-command:
+    description: Gradle command to run to prepare the container when running integration tests.  Defaults to `:<project>:<project>-web:installDist`.
 
   # Publish args
   publish:
@@ -57,7 +59,6 @@ runs:
     - uses: actions/setup-java@v4
       with:
         java-version: |
-          11
           17
         distribution: 'zulu'
         cache: ${{ !env.ACT && 'gradle' || '' }}  # Disable Gradle cache when running actions locally
@@ -79,13 +80,22 @@ runs:
         ./gradlew ${{ inputs.gradle-cmd-opts }} -Dorg.gradle.daemon=false --stacktrace ':${{ inputs.project }}:build'
 
     # If configured, build a container, publish it locally, and run its tests
+    - name: Run build to produce container artifacts
+      if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
+      env:
+        ORG_GRADLE_PROJECT_version: ${{ steps.version.outputs.version }}
+      shell: bash
+      run: |
+        ./gradlew ${{ !inputs.integration-test-build-command && format(':{0}:{0}-web:installDist', inputs.project) || inputs.integration-test-build-command }}
+
     - name: Container Integration Tests (build)
       if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.project }}
         file: ${{ inputs.project }}/Dockerfile.slim
         platforms: local
+        load: true
         build-args: ${{ inputs.build-args }}
         tags: |
           "${{ inputs.project }}-${{ steps.version.outputs.version }}-integration-test"
@@ -93,7 +103,7 @@ runs:
     - name: Container Integration Tests (test)
       if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
       env:
-        FULL_DOCKER_IMAGE_NAME: "${{ inputs.project }}:${{ steps.version.outputs.version }}-integration-test"
+        FULL_DOCKER_IMAGE_NAME: "${{ inputs.project }}-${{ steps.version.outputs.version }}-integration-test"
         GRADLE_OPTS: ${{ inputs.gradle-opts }}
       shell: bash
       run: ./gradlew ${{ inputs.gradle-cmd-opts }} -Dorg.gradle.daemon=false :${{ inputs.project }}:${{ inputs.project }}-integration:test
@@ -101,18 +111,18 @@ runs:
     # Containers should generally be built in PRs to ensure that Dockerfiles are functioning properly
     - name: Build/Publish Docker containers
       uses: ./.github/actions/publish-docker
-      if: inputs.publish-containers != 'false'
+      if: inputs.publish == 'true' && inputs.publish-containers != 'false'
       with:
         project: ${{ inputs.project }}
         version: ${{ steps.version.outputs.version }}
         release-train: ${{ steps.version.outputs.release-train-suffixed }}
         build-url: ${{ steps.version.outputs.build-url }}
         build-command: ${{ inputs.docker-build-command }}
-        push: ${{ inputs.publish == 'true' && inputs.publish-containers == 'true' }}
+        push: ${{ github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-containers == 'true' }}
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Publish Debian packages
-      if: inputs.publish == 'true' && inputs.publish-debs == 'true' && steps.version.outputs.is-release == 'false'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-debs == 'true' && steps.version.outputs.is-release == 'false'
       uses: ./.github/actions/publish-deb
       with:
         project: ${{ inputs.project }}
@@ -122,7 +132,7 @@ runs:
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Publish Halconfig
-      if: inputs.publish == 'true' && inputs.publish-halconfig == 'true'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-halconfig == 'true'
       uses: ./.github/actions/publish-halconfig
       with:
         project: ${{ inputs.project }}
@@ -130,7 +140,7 @@ runs:
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Publish NPM
-      if: inputs.publish == 'true' && inputs.publish-npm == 'true'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-npm == 'true'
       uses: ./.github/actions/publish-npm
       with:
         project: ${{ inputs.project }}
@@ -140,7 +150,7 @@ runs:
 
     - name: Create Tag
       uses: actions/github-script@v7
-      if: inputs.publish == 'true'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true'
       env:
         TAG: ${{ steps.version.outputs.tag }}
       with:

@@ -12,7 +12,7 @@ on:
       - 'kork/**'
 
 jobs:
-  deck:
+  kork:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

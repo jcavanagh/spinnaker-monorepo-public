@@ -32,6 +32,7 @@ runs:
   using: "composite"
   steps:
     - name: Login to GAR
+      if: github.event_name != 'pull_request'
       uses: docker/login-action@v3
       # use service account flow defined at: https://github.com/docker/login-action#service-account-based-authentication-1
       with:
@@ -46,16 +47,8 @@ runs:
           echo "has-slim=true" >> $GITHUB_ENV
         fi
         
-        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.slim', inputs.project)) }}' != '' ]]; then
-          echo "has-slim-java11=true" >> $GITHUB_ENV
-        fi
-        
-        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.ubuntu', inputs.project)) }}' != '' ]]; then
+        if [[ '${{ hashFiles(format('{0}/Dockerfile.ubuntu', inputs.project)) }}' != '' ]]; then
           echo "has-ubuntu=true" >> $GITHUB_ENV
-        fi
-        
-        if [[ '${{ hashFiles(format('{0}/Dockerfile.java11.ubuntu', inputs.project)) }}' != '' ]]; then
-          echo "has-ubuntu-java11=true" >> $GITHUB_ENV
         fi
 
     - name: Run build to produce container artifacts
@@ -79,7 +72,7 @@ runs:
 
     - name: Build and publish standard container image
       if: env.has-standard == 'true'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       id: docker-standard
       with:
         context: ${{ inputs.project }}
@@ -98,7 +91,7 @@ runs:
 
     - name: Build and publish slim container image
       if: env.has-slim == 'true'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       id: docker-slim
       with:
         context: ${{ inputs.project }}
@@ -118,7 +111,7 @@ runs:
 
     - name: Build and publish ubuntu container image
       if: env.has-ubuntu == 'true'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       id: docker-ubuntu
       with:
         context: ${{ inputs.project }}
@@ -128,45 +121,6 @@ runs:
         build-args: ${{ inputs.build-args }}
         tags: |
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu"
-        labels: |
-          "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
-          "org.opencontainers.image.revision=${{ github.sha }}"
-          "org.opencontainers.image.version=${{ inputs.version }}"
-          "io.spinnaker.ci-build=${{ inputs.build-url }}"
-
-    # If we have a Dockerfile.java11.[ubuntu|slim] file, attempt to build it
-    - name: Build and publish slim JRE 11 container image
-      if: env.has-slim-java11 == 'true'
-      uses: docker/build-push-action@v5
-      id: docker-slim-java11
-      with:
-        context: ${{ inputs.project }}
-        file: ${{ inputs.project }}/Dockerfile.slim
-        platforms: linux/amd64,linux/arm64
-        push: ${{ inputs.push == 'true' }}
-        build-args: ${{ inputs.build-args }}
-        tags: |
-          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11"
-          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11-slim"
-          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.release-train }}-latest-java11"
-        labels: |
-          "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
-          "org.opencontainers.image.revision=${{ github.sha }}"
-          "org.opencontainers.image.version=${{ inputs.version }}"
-          "io.spinnaker.ci-build=${{ inputs.build-url }}"
-
-    - name: Build and publish ubuntu JRE 11 container image
-      if: env.has-ubuntu-java11 == 'true'
-      uses: docker/build-push-action@v5
-      id: docker-ubuntu-java11
-      with:
-        context: ${{ inputs.project }}
-        file: ${{ inputs.project }}/Dockerfile.ubuntu
-        platforms: linux/amd64,linux/arm64
-        push: ${{ inputs.push == 'true' }}
-        build-args: ${{ inputs.build-args }}
-        tags: |
-          "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11-ubuntu"
         labels: |
           "org.opencontainers.image.source=https://github.com/spinnaker/spinnaker"
           "org.opencontainers.image.revision=${{ github.sha }}"
@@ -194,14 +148,4 @@ runs:
         
         if [[ '${{ env.has-ubuntu }}' == 'true' ]]; then
           echo "| __Ubuntu__ | ${{ steps.docker-ubuntu.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu |" >> "$GITHUB_STEP_SUMMARY"
-        fi
-        
-        if [[ '${{ env.has-slim-java11 }}' == 'true' ]]; then
-          echo "| __Slim (java11)__ | ${{ steps.docker-slim-java11.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-java11 |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-slim-java11 |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|  |  | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.release-train }}-latest-java11 |" >> "$GITHUB_STEP_SUMMARY"
-        fi
-        
-        if [[ '${{ env.has-ubuntu-java11 }}' == 'true' ]]; then
-          echo "| __Ubuntu (java11)__ | ${{ steps.docker-ubuntu-java11.outputs.imageid }} | ${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu-java11 |" >> "$GITHUB_STEP_SUMMARY"
         fi
