@@ -72,7 +72,7 @@ runs:
 
     - name: Build and publish standard container image
       if: env.has-standard == 'true'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       id: docker-standard
       with:
         context: ${{ inputs.project }}
@@ -91,7 +91,7 @@ runs:
 
     - name: Build and publish slim container image
       if: env.has-slim == 'true'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       id: docker-slim
       with:
         context: ${{ inputs.project }}
@@ -111,7 +111,7 @@ runs:
 
     - name: Build and publish ubuntu container image
       if: env.has-ubuntu == 'true'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       id: docker-ubuntu
       with:
         context: ${{ inputs.project }}

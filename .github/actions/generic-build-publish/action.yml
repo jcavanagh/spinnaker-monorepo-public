@@ -90,11 +90,12 @@ runs:
 
     - name: Container Integration Tests (build)
       if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.project }}
         file: ${{ inputs.project }}/Dockerfile.slim
         platforms: local
+        load: true
         build-args: ${{ inputs.build-args }}
         tags: |
           "${{ inputs.project }}-${{ steps.version.outputs.version }}-integration-test"
@@ -102,7 +103,7 @@ runs:
     - name: Container Integration Tests (test)
       if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
       env:
-        FULL_DOCKER_IMAGE_NAME: "${{ inputs.project }}:${{ steps.version.outputs.version }}-integration-test"
+        FULL_DOCKER_IMAGE_NAME: "${{ inputs.project }}-${{ steps.version.outputs.version }}-integration-test"
         GRADLE_OPTS: ${{ inputs.gradle-opts }}
       shell: bash
       run: ./gradlew ${{ inputs.gradle-cmd-opts }} -Dorg.gradle.daemon=false :${{ inputs.project }}:${{ inputs.project }}-integration:test
