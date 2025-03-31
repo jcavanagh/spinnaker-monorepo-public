@@ -24,7 +24,7 @@ jobs:
         run: |
           echo "Running because it was truthy"
       - name: Runs if falsy
-        if: !inputs.bool-input
+        if: ${{ !inputs.bool-input }}
         run: |
           echo "Running because it was falsy"
       - name: Runs if boolean true
