@@ -59,6 +59,7 @@ runs:
         namespace: ${{ inputs.project }}
         version-override: ${{ inputs.build-tag-override }}
         github-token: ${{ inputs.github-token }}
+        skip-tag: ${{ github.event_name == 'pull_request' }}
 
     # Always set up Java, for Gradle
     - uses: actions/setup-java@v4
