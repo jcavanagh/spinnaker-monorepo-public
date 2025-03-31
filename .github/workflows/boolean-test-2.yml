@@ -1,4 +1,4 @@
-name: Boolean Test 1
+name: Boolean Test 2
 
 on:
   workflow_dispatch:
@@ -9,6 +9,5 @@ on:
         default: true
 
 jobs:
-  booleantest1:
-    runs-on: ubuntu-latest
+  booleantest2:
     uses: ./.github/workflows/boolean-test-1.yml
