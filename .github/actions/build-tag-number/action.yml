@@ -26,6 +26,8 @@ inputs:
 outputs:
   build_number:
     description: 'Build tag number'
+  build_number_prev:
+    description: 'Previous build tag number'
 
 branding:
   icon: 'hash'

@@ -23,5 +23,9 @@ export INPUT_DEP_CONSUL_VERSION='0.7.5'
 export INPUT_DEP_REDIS_VERSION='2:2.8.4-2'
 export INPUT_DEP_VAULT_VERSION='0.7.0'
 
+export INPUT_VERSION="1.37.8"
+
+export INPUT_GITHUB_PAT=`cat ~/monorepo/spinnaker-monorepo-public-pat`
+
 npm run build
 node ./dist/index.js

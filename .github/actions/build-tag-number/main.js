@@ -76,13 +76,16 @@ function cleanup(nrTags) {
     }
 }
 
-function writeOutput(nextBuildNumber) {
+function writeOutput(nextBuildNumber, cacheBuildNumber = true) {
     //Setting the output and a environment variable to new build number...
-    fs.writeFileSync(env.GITHUB_OUTPUT, `build_number=${nextBuildNumber}`);
-    fs.writeFileSync(env.GITHUB_ENV, `BUILD_NUMBER=${nextBuildNumber}`);
+    const prevBuildNumber = Math.max(nextBuildNumber - 1, 0);
+    fs.writeFileSync(env.GITHUB_OUTPUT, `build_number=${nextBuildNumber}\nbuild_number_prev=${prevBuildNumber}`);
+    fs.writeFileSync(env.GITHUB_ENV, `BUILD_NUMBER=${nextBuildNumber}\nBUILD_NUMBER_PREV=${prevBuildNumber}`);
 
     //Save to file so it can be used for next jobs...
-    fs.writeFileSync('BUILD_NUMBER', nextBuildNumber.toString());
+    if(cacheBuildNumber) {
+        fs.writeFileSync('BUILD_NUMBER', nextBuildNumber.toString());
+    }
 }
 
 // Callback: currentBuildNumber, nextBuildNumber, tags
@@ -160,9 +163,8 @@ function main() {
     if (fs.existsSync(path)) {
         let buildNumber = fs.readFileSync(path);
         console.log(`Build number already generated in earlier jobs, using build number ${buildNumber}...`);
-        //Setting the output and a environment variable to new build number...
-        fs.writeFileSync(env.GITHUB_OUTPUT, `build_number=${buildNumber}`);
-        fs.writeFileSync(env.GITHUB_ENV, `BUILD_NUMBER=${buildNumber}`);
+        //Setting the output and an environment variable to new build number...
+        writeOutput(buildNumber, false);
         return;
     }
 

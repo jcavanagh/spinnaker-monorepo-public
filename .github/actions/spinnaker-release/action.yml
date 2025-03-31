@@ -76,6 +76,17 @@ inputs:
     description: Vault version to write to dependencies
     default: '0.7.0'
 
+  # Git stuff for changelog PRs
+  git-email:
+    description: Git author email to commit merges with
+    default: spinbot@spinnaker.io
+  git-name:
+    description: Git author name to commit merges with
+    default: spinnakerbot
+  github-pat:
+    description: Github PAT - NOT the GITHUB_TOKEN from GHA.  PRs created with GITHUB_TOKEN do not trigger PR Workflows.
+    required: true
+
 outputs:
   bom:
     description: BoM contents

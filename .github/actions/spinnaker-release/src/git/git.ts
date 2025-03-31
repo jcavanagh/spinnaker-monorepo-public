@@ -1,21 +1,28 @@
 import * as core from '@actions/core';
 import { execSync } from 'child_process';
+import { getOctokit } from '@actions/github';
+import * as util from '../util';
 
 export interface Tag {
   name: string;
   sha: string;
 }
 
-function gitCmd(command: string): string | undefined {
-  const out = gitCmdMulti(command);
+export const github = getOctokit(util.getInput('github-pat'));
+
+export function gitCmd(command: string, execOpts?: object): string | undefined {
+  const out = gitCmdMulti(command, execOpts);
   return out ? out[0] : undefined;
 }
 
-function gitCmdMulti(command: string): Array<string> | undefined {
+export function gitCmdMulti(
+  command: string,
+  execOpts?: object,
+): Array<string> | undefined {
   try {
-    const out = execSync(command, {}).toString();
-    const lines = out.split(/\r?\n/);
-    return lines;
+    execOpts = execOpts || {};
+    const out = execSync(command, execOpts).toString();
+    return out.split(/\r?\n/);
   } catch (e) {
     core.error('Failed to execute Git command');
     core.error(e);
@@ -25,6 +32,15 @@ function gitCmdMulti(command: string): Array<string> | undefined {
 
 export function head(): string | undefined {
   return gitCmd('git rev-parse HEAD');
+}
+
+export function changelogCommits(
+  tag: string,
+  previousTag: string,
+): Array<string> | undefined {
+  return gitCmdMulti(
+    `git log ${tag}...${previousTag} --oneline --no-abbrev-commit`,
+  );
 }
 
 export function parseTag(name: string): Tag | undefined {
