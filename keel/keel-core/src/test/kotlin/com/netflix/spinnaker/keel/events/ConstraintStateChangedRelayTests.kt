@@ -53,14 +53,14 @@ class ConstraintStateChangedRelayTests : JUnit5Minutests {
       provenance = "plugin",
     )
 
-    internal val matchingEvaluator = mockk<StatefulConstraintEvaluator<FakeConstraint, DefaultConstraintAttributes>>(block = {
+    internal val matchingEvaluator = mockk<StatefulConstraintEvaluator<FakeConstraint, DefaultConstraintAttributes>>() {
       every { supportedType } returns SupportedConstraintType("fake", FakeConstraint::class.java)
       every { onConstraintStateChanged(event) } just runs
-    })
+    }
 
-    internal val nonMatchingEvaluator = mockk<StatefulConstraintEvaluator<FakeConstraint, DefaultConstraintAttributes>>(block = {
+    internal val nonMatchingEvaluator = mockk<StatefulConstraintEvaluator<FakeConstraint, DefaultConstraintAttributes>>() {
       every { supportedType } returns SupportedConstraintType("the-wrong-fake", FakeConstraint::class.java)
-    })
+    }
 
     val publisher: ApplicationEventPublisher = mockk(relaxUnitFun = true)
 
