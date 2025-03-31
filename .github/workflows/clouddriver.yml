@@ -6,9 +6,11 @@ on:
     inputs:
       publish-containers:
         description: Publish containers
+        type: boolean
         default: true
       publish-debs:
         description: Publish debs
+        type: boolean
         default: true
       version-override:
         description: Overrides the version for artifacts (e.g. "1.37.1").  Otherwise, uses the auto-incrementing build number for the current branch.
@@ -51,8 +53,8 @@ jobs:
         with:
           project: clouddriver
           publish: ${{ github.event_name != 'pull_request' }}
-          publish-containers: ${{ inputs.publish-containers || true }}
-          publish-debs: ${{ inputs.publish-debs || true }}
-          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
+          publish-containers: ${{ inputs.publish-containers != false }}
+          publish-debs: ${{ inputs.publish-debs != false }}
+          version-override: ${{ inputs.version-override || '' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}

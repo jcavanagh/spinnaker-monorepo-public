@@ -75,7 +75,7 @@ runs:
         if [[ -n '${{ inputs.version-override }}' ]]; then
           # Split override string
           IFS=. read -r -a SPLIT_VER <<< '${{ inputs.version-override }}'
-          SPLIT_VER_LEN="${#SPLIT_VER[@]}
+          SPLIT_VER_LEN="${#SPLIT_VER[@]}"
           
           # Check override string validity
           if [[ $SPLIT_VER_LEN != 3 ]]; then

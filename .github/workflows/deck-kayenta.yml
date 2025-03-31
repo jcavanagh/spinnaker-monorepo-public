@@ -6,10 +6,18 @@ on:
     inputs:
       publish-npm:
         description: Publish npm
+        type: boolean
         default: true
       version-override:
         description: Overrides the version for artifacts
   workflow_dispatch:
+    inputs:
+      publish-npm:
+        description: Publish npm
+        type: boolean
+        default: true
+      version-override:
+        description: Overrides the version for artifacts
 
   push:
     branches:
@@ -36,8 +44,8 @@ jobs:
           publish-containers: false
           publish-debs: false
           publish-halconfig: false
-          publish-npm: ${{ github.event_name != 'workflow_call' && true || inputs.publish-npm }}
-          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
+          publish-npm: ${{ inputs.publish-npm != false }}
+          version-override: ${{ inputs.version-override || '' }}
           integration-test: false
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}
