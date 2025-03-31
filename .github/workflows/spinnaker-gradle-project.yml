@@ -27,7 +27,8 @@ jobs:
       - id: version
         uses: ./.github/actions/version
         with:
-          project: 'spinnaker-gradle-project'
+          namespace: 'spinnaker-gradle-project'
+          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release build (Gradle plugin portal)

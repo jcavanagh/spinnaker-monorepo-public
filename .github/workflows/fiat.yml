@@ -3,6 +3,16 @@ run-name: Fiat ${{ github.ref_name }} (${{ github.event_name }})
 
 on:
   workflow_call:
+    inputs:
+      publish-containers:
+        description: Publish containers
+        default: true
+      publish-debs:
+        description: Publish debs
+        default: true
+      version-override:
+        description: Overrides the version for artifacts
+
   workflow_dispatch:
 
   push:
@@ -31,5 +41,8 @@ jobs:
           project: fiat
           gradle-cmd-opts: -PenableCrossCompilerPlugin=true
           publish: ${{ github.event_name != 'pull_request' }}
+          publish-containers: ${{ github.event_name != 'workflow_call' && true || inputs.publish-containers }}
+          publish-debs: ${{ github.event_name != 'workflow_call' && true || inputs.publish-debs }}
+          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}

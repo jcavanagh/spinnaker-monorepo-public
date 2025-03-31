@@ -7,6 +7,8 @@ inputs:
   project:
     description: Project to build and (optionally) publish
     required: true
+  version-override:
+    description: If set, uses this value to define the version context for this build
   github-token:
     description: Github token
     required: true
@@ -18,7 +20,7 @@ inputs:
     description: npmjs.org publishing token
   gradle-opts:
     description: Additional Gradle options set via GRADLE_OPTS
-    default: -Xmx2g -Xms2g
+    default: -Xmx4g -Xms4g
   gradle-cmd-opts:
     description: Additional Gradle options set via the command line
   docker-build-command:
@@ -52,7 +54,8 @@ runs:
     - id: version
       uses: ./.github/actions/version
       with:
-        project: ${{ inputs.project }}
+        namespace: ${{ inputs.project }}
+        version-override: ${{ inputs.build-tag-override }}
         github-token: ${{ inputs.github-token }}
 
     # Always set up Java, for Gradle

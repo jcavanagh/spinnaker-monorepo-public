@@ -3,6 +3,10 @@ run-name: Libraries ${{ github.ref_name }}
 
 on:
   workflow_call:
+    inputs:
+      version-override:
+        description: Overrides the version for artifacts
+
   workflow_dispatch:
   push:
     branches:
@@ -31,7 +35,8 @@ jobs:
       - uses: ./.github/actions/version
         id: version
         with:
-          project: spinnaker-libraries
+          namespace: spinnaker-libraries
+          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-java@v4

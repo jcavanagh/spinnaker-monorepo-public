@@ -2,6 +2,10 @@ name: Spin CLI
 
 on:
   workflow_call:
+    inputs:
+      version-override:
+        description: Overrides the version for artifacts
+
   workflow_dispatch:
 
   push:
@@ -32,7 +36,8 @@ jobs:
       - uses: ./.github/actions/version
         id: version
         with:
-          project: spin
+          namespace: spin
+          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-go@v4

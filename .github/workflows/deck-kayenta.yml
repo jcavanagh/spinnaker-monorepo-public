@@ -3,6 +3,12 @@ run-name: Deck Kayenta ${{ github.ref_name }} (${{ github.event_name }})
 
 on:
   workflow_call:
+    inputs:
+      publish-npm:
+        description: Publish npm
+        default: true
+      version-override:
+        description: Overrides the version for artifacts
   workflow_dispatch:
 
   push:
@@ -30,7 +36,8 @@ jobs:
           publish-containers: false
           publish-debs: false
           publish-halconfig: false
-          publish-npm: true
+          publish-npm: ${{ github.event_name != 'workflow_call' && true || inputs.publish-npm }}
+          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
           integration-test: false
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}
