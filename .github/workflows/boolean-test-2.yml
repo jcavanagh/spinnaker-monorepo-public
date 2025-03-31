@@ -1,0 +1,14 @@
+name: Boolean Test 1
+
+on:
+  workflow_dispatch:
+    inputs:
+      bool-input:
+        description: A boolean
+        type: boolean
+        default: true
+
+jobs:
+  booleantest1:
+    runs-on: ubuntu-latest
+    uses: ./.github/workflows/boolean-test-1.yml

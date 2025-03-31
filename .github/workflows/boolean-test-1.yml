@@ -1,0 +1,45 @@
+name: Boolean Test 1
+
+on:
+  workflow_call:
+    inputs:
+      bool-input:
+        description: A boolean
+        type: boolean
+        default: true
+
+  workflow_dispatch:
+    inputs:
+      bool-input:
+        description: A boolean
+        type: boolean
+        default: true
+
+jobs:
+  booleantest1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Runs if truthy
+        if: inputs.bool-input
+        run: |
+          echo "Running because it was truthy"
+      - name: Runs if falsy
+        if: !inputs.bool-input
+        run: |
+          echo "Running because it was falsy"
+      - name: Runs if boolean true
+        if: inputs.bool-input == true
+        run: |
+          echo "Running because it was boolean true"
+      - name: Runs if string true
+        if: inputs.bool-input == 'true'
+        run: |
+          echo "Running because it was string true"
+      - name: Runs if not boolean false
+        if: inputs.bool-input != false
+        run: |
+          echo "Running because it was not boolean false"
+      - name: Runs if not string false
+        if: inputs.bool-input != 'false'
+        run: |
+          echo "Running because it was not string false"
