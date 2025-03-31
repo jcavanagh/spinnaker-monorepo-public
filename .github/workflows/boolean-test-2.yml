@@ -1,4 +1,5 @@
 name: Boolean Test 2
+run-name: Boolean test (${{ inputs.bool-input }})
 
 on:
   workflow_dispatch:
@@ -11,3 +12,5 @@ on:
 jobs:
   booleantest2:
     uses: ./.github/workflows/boolean-test-1.yml
+    with:
+      bool-input: ${{ inputs.bool-input }}

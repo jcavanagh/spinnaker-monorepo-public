@@ -1,4 +1,5 @@
 name: Boolean Test 1
+run-name: Boolean test (${{ inputs.bool-input }})
 
 on:
   workflow_call:
@@ -35,6 +36,23 @@ jobs:
         if: inputs.bool-input == 'true'
         run: |
           echo "Running because it was string true"
+      - name: Runs if boolean false
+        if: inputs.bool-input == false
+        run: |
+          echo "Running because it was boolean false"
+      - name: Runs if string false
+        if: inputs.bool-input == 'false'
+        run: |
+          echo "Running because it was string false"
+
+      - name: Runs if not boolean true
+        if: inputs.bool-input != true
+        run: |
+          echo "Running because it was not boolean true"
+      - name: Runs if not string true
+        if: inputs.bool-input != 'true'
+        run: |
+          echo "Running because it was not string true"
       - name: Runs if not boolean false
         if: inputs.bool-input != false
         run: |
