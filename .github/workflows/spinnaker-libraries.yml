@@ -5,9 +5,15 @@ on:
   workflow_call:
     inputs:
       version-override:
-        description: Overrides the version for artifacts
+        description: Overrides the version for artifacts (e.g. "1.37.1").  Otherwise, uses the auto-incrementing build number for the current branch.
+        type: string
 
   workflow_dispatch:
+    inputs:
+      version-override:
+        description: Overrides the version for artifacts (e.g. "1.37.1").  Otherwise, uses the auto-incrementing build number for the current branch.
+        type: string
+
   push:
     branches:
       - main
