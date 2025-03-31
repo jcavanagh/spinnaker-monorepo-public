@@ -1,11 +1,13 @@
 import * as core from '@actions/core';
+import dayjs from 'dayjs';
 import * as git from '../git/git';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as util from '../util';
+import * as uuid from 'uuid';
 
-const monorepo = 'jcavanagh/spinnaker-monorepo-public';
-const docsRepo = 'jcavanagh/spinnaker.io';
+const monorepo = util.getInput('monorepo-location');
+const docsRepo = util.getInput('docs-repo-location');
 
 const partitions = [
   {
@@ -30,7 +32,7 @@ const partitions = [
   },
 ];
 
-const conventionalCommit = /.+\((.+)\):.+/g;
+const conventionalCommit = /.+\((.+)\):\s*(.+)/;
 
 export async function forVersion(
   version: string,
@@ -73,7 +75,7 @@ async function generate(
   // Render changelog Markdown
   let markdown = `---
 title: Spinnaker Release ${version}
-date: ${Date.now()}
+date: ${dayjs().format('YYYY-MM-DD HH:MM:SS +0000')}
 major_minor: ${parsed.major}.${parsed.minor}
 version: ${version}
 ---
@@ -83,25 +85,28 @@ version: ${version}
   let remainingLines = [...commits];
   const partitioned = partitions.map((part) => {
     const matching = remainingLines.filter((line) => part.pattern.test(line));
-    remainingLines = remainingLines.filter((r) => matching.includes(r));
+    remainingLines = remainingLines.filter((r) => !matching.includes(r));
 
     return {
       title: part.title,
       commits: matching.map((line) => {
-        const split = line.split(' ', 2);
-        const sha = split[0];
+        const [sha, ...rest] = line.split(' ');
         const shortSha = sha.substring(0, 8);
-        const message = split[1];
+        let message = rest.join(' ');
 
         // Try to extract the conventional commit component
-        let component = 'unknown';
+        let component = 'change';
         if (conventionalCommit.test(message)) {
           try {
-            component = [...message.matchAll(conventionalCommit)][0][1];
+            const matches = message.match(conventionalCommit);
+            if (matches) {
+              component = matches[1];
+              message = matches[2];
+            }
           } catch (e) {
             // No need to blow anything up over an error matching this
             core.warning(
-              `Could not parse changelog message as conventional commit ${message}`,
+              `Could not parse changelog message as conventional commit ${e.message}`,
             );
           }
         }
@@ -122,12 +127,19 @@ version: ${version}
 
     const lines = partition.commits
       .map((commit) => {
-        markdown += `* ${commit}\n`;
+        const url = `https://github.com/${monorepo}/commit/${commit.sha}`;
+        return `* **${commit.component}:** ${commit.message} ([${commit.shortSha}](${url}))`;
       })
       .sort();
 
     lines.forEach((line) => (markdown += `${line}\n`));
   }
+
+  core.info("Found commits:");
+  core.info(JSON.stringify(commits, null, 2));
+
+  core.info("Changelog contents:");
+  core.info(markdown);
 
   return new Changelog(version, previousVersion, commits, markdown);
 }
@@ -152,12 +164,15 @@ export class Changelog {
 
   async publish() {
     const [owner, repo] = docsRepo.split('/', 2);
+    const folder = uuid.v4();
     const tmpdir = process.env.RUNNER_TEMP || os.tmpdir();
 
     // Clone docs repo
-    git.gitCmd(`git clone https://github.com/${docsRepo}`, { cwd: tmpdir });
+    git.gitCmd(`git clone https://github.com/${docsRepo} ${folder}`, {
+      cwd: tmpdir,
+    });
 
-    const docsCwd = `${tmpdir}/${repo}`;
+    const docsCwd = `${tmpdir}/${folder}`;
     git.gitCmd(`git config user.email "${util.getInput('git-email')}"`, {
       cwd: docsCwd,
     });
@@ -175,7 +190,16 @@ export class Changelog {
     const commitMsg = `Automatic changelog for Spinnaker ${this.version}`;
     git.gitCmd(`git add --all`, { cwd: docsCwd });
     git.gitCmd(`git commit -a -m '${commitMsg}'`, { cwd: docsCwd });
+
+    const ghPat = util.getInput('github-pat');
+    git.gitCmd(
+      `git remote set-url origin https://${ghPat}@github.com/${docsRepo}.git`,
+      { cwd: docsCwd },
+    );
     git.gitCmd(`git push -f origin HEAD:${branch}`, { cwd: docsCwd });
+    git.gitCmd(`git remote set-url origin https://github.com/${docsRepo}.git`, {
+      cwd: docsCwd,
+    });
 
     // Create PR
     return git.github.rest.pulls.create({

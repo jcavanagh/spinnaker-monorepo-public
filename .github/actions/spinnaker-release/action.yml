@@ -77,6 +77,12 @@ inputs:
     default: '0.7.0'
 
   # Git stuff for changelog PRs
+  monorepo-location:
+    description: Location of monorepo on Github
+    default: jcavanagh/spinnaker-monorepo-public
+  docs-repo-location:
+    description: Location of docs repo on Github
+    default: jcavanagh/spinnaker.io
   git-email:
     description: Git author email to commit merges with
     default: spinbot@spinnaker.io

@@ -25,7 +25,11 @@ export INPUT_DEP_VAULT_VERSION='0.7.0'
 
 export INPUT_VERSION="1.37.8"
 
-export INPUT_GITHUB_PAT=`cat ~/monorepo/spinnaker-monorepo-public-pat`
+export INPUT_GITHUB_PAT=$(cat "$HOME/monorepo/spinnaker-monorepo-public-pat")
+export INPUT_MONOREPO_LOCATION='jcavanagh/spinnaker-monorepo-public'
+export INPUT_DOCS_REPO_LOCATION='jcavanagh/spinnaker.io'
+export INPUT_GIT_EMAIL=spinbot@spinnaker.io
+export INPUT_GIT_NAME=spinnakerbot
 
 npm run build
 node ./dist/index.js

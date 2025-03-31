@@ -22,7 +22,7 @@ export function gitCmdMulti(
   try {
     execOpts = execOpts || {};
     const out = execSync(command, execOpts).toString();
-    return out.split(/\r?\n/);
+    return out.split(/\r?\n/).filter((line) => !!line);
   } catch (e) {
     core.error('Failed to execute Git command');
     core.error(e);
