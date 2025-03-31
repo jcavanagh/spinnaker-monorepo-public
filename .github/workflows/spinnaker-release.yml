@@ -4,55 +4,209 @@ run-name: Spinnaker Release (${{ inputs.spinnaker-version }} dry=${{ inputs.dry-
 on:
   workflow_dispatch:
     inputs:
-      spinnaker-version:
-        description: Spinnaker release version, e.g. 2023.1.1 or 1.36.1 or main.1
-        type: string
-      previous-version:
-        description: (optional) Previous Spinnaker release version to use for changelogs.  If not specified, infers previous from the `spinnaker-version` input.
-        type: string
       add-to-versions-yml:
         description: Add this version to `versions.yml` for Halyard?
         type: boolean
         default: true
-      branch:
-        description: (optional) Manually specify reference branch for image selection and versioning, if the inference from the above version does not work.
+      spinnaker-version:
+        description: Confirm the Spinnaker version to publish.  This will be compared against the version computed by the release process, and will fail if they do not match.
       dry-run:
         type: boolean
         description: Dry run?
         default: true
 
 jobs:
-  spinnaker-release:
+  check-preconditions:
+    steps:
+      - name: Exit if not on a release branch
+        run: |
+          REF="${{ github.ref_name }}"
+          
+          if  [[ $REF != release-* ]]; then
+            echo "Release workflow must be run from a release branch"
+            exit 1
+          fi
+          
+      - name: Generate next build tag without storing it
+        if: inputs.dry-run == 'false'
+        uses: ./.github/actions/build-tag-number
+        id: precondition-version
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          suffix: ${{ format('{0}-{1}', 'spinnaker', github.ref_name) }}
+          skip-increment: false
+          skip-tag: true
+
+      - name: Verify expected release version
+        if: inputs.dry-run == 'false'
+        run: |
+          VERSION='${{ steps.precondition-version.outputs.version }}'
+          USER_VERSION='${{ inputs.spinnaker-version }}'
+          
+          if [[ $VERSION != $USER_VERSION ]]; then
+            echo "Mismatched release version expectations - user expected $USER_VERSION but next version is $VERSION"
+            exit 1
+          fi
+
+  version:
+    - id: version
+      uses: ./.github/actions/version
+      needs: check-preconditions
+      with:
+        namespace: spinnaker
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        skip-increment: false
+        skip-tag: ${{ inputs.dry-run != 'false' }}
+
+  clouddriver:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/clouddriver.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  deck:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/deck.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  deck-kayenta:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/deck-kayenta.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  echo:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/echo.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  fiat:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/fiat.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  front50:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/front50.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  gate:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/gate.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  halyard:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/halyard.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  igor:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/igor.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  kayenta:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/kayenta.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  keel:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/keel.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  orca:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/orca.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  rosco:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/rosco.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  spin:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/spin.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+  libs:
+    if: inputs.dry-run == 'false'
+    needs: version
+    uses: ./.github/workflows/spinnaker-libraries.yml
+    secrets: inherit
+    with:
+      version-override: ${{ steps.version.outputs.version }}
+
+  spinnaker-release-bom:
     runs-on: ubuntu-latest
+    needs: [version, clouddriver, deck, deck-kayenta, echo, fiat, front50, gate, halyard, igor, kayenta, keel, orca, rosco, spin, libs]
+    # This requires some exhaustive logic, since a job that can be skipped won't satisfy a `needs`
+    # https://github.com/actions/runner/issues/491
+    if: |
+      always() &&
+      (needs.version.result == 'success' || needs.version.result == 'skipped') &&
+      (needs.clouddriver.result == 'success' || needs.clouddriver.result == 'skipped') &&
+      (needs.deck.result == 'success' || needs.deck.result == 'skipped') &&
+      (needs.deck-kayenta.result == 'success' || needs.deck-kayenta.result == 'skipped') &&
+      (needs.echo.result == 'success' || needs.echo.result == 'skipped') &&
+      (needs.fiat.result == 'success' || needs.fiat.result == 'skipped') &&
+      (needs.front50.result == 'success' || needs.front50.result == 'skipped') &&
+      (needs.gate.result == 'success' || needs.gate.result == 'skipped') &&
+      (needs.halyard.result == 'success' || needs.halyard.result == 'skipped') &&
+      (needs.igor.result == 'success' || needs.igor.result == 'skipped') &&
+      (needs.kayenta.result == 'success' || needs.kayenta.result == 'skipped') &&
+      (needs.keel.result == 'success' || needs.keel.result == 'skipped') &&
+      (needs.orca.result == 'success' || needs.orca.result == 'skipped') &&
+      (needs.rosco.result == 'success' || needs.rosco.result == 'skipped') &&
+      (needs.spin.result == 'success' || needs.spin.result == 'skipped') &&
+      (needs.libs.result == 'success' || needs.libs.result == 'skipped')
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
-      - id: version
-        uses: ./.github/actions/version
-        if: inputs.spinnaker-version == ''
-        with:
-          project: spinnaker
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          skip-increment: ${{ inputs.dry-run != 'false' }}
-
       - name: Process Inputs
         shell: bash
         run: |
           if [[ '${{ inputs.spinnaker-version }}' == '' ]]; then
-            echo "spinnaker-version=${{ steps.version.release-train }}.${{ steps.version.build-number }}" >> "$GITHUB_ENV"
+            echo "spinnaker-version=${{ needs.version.steps.version.outputs.release-train }}.${{ needs.version.steps.version.outputs.build-number }}" >> "$GITHUB_ENV"
           else
             echo "spinnaker-version=${{ inputs.spinnaker-version }}" >> "$GITHUB_ENV"
           fi
 
       - name: Create Spinnaker release BoM and changelog
-        id: spinnaker-release
+        id: spinnaker-release-bom
         uses: ./.github/actions/spinnaker-release
         with:
           credentials-json: ${{ secrets.GAR_JSON_KEY }}
-          branch: ${{ inputs.branch }}
           version: ${{ env.spinnaker-version }}
           previous-version: ${{ inputs.previous-version }}
           dry-run: ${{ inputs.dry-run }}
@@ -66,7 +220,7 @@ jobs:
           tag_name: spinnaker-release-${{ inputs.spinnaker-version }}
           release_name: Spinnaker ${{ inputs.spinnaker-version }}
           body: |
-            ${{ steps.spinnaker-release.outputs.changelog }}
+            ${{ steps.spinnaker-release-bom.outputs.changelog }}
           draft: false
           prerelease: false
 
@@ -78,27 +232,27 @@ jobs:
           echo "| | |" >> "$GITHUB_STEP_SUMMARY"
           echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
           echo "| __Version__ | ${{ inputs.spinnaker-version }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| __BoM__ | ${{ steps.spinnaker-release.outputs.bom-url }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| __Changelog__ | ${{ steps.spinnaker-release.outputs.bom-url }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| __versions.yml__ | ${{ steps.spinnaker-release.outputs.versions-yml-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __BoM__ | ${{ steps.spinnaker-release-bom.outputs.bom-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Changelog__ | ${{ steps.spinnaker-release-bom.outputs.bom-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __versions.yml__ | ${{ steps.spinnaker-release-bom.outputs.versions-yml-url }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "<details>" >> "$GITHUB_STEP_SUMMARY"
           echo "<summary>BoM Contents</summary>" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          echo "${{ steps.spinnaker-release-outputs.bom }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.spinnaker-release-bom.outputs.bom }}" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo "</details>" >> "$GITHUB_STEP_SUMMARY"
           echo "<details>" >> "$GITHUB_STEP_SUMMARY"
           echo "<summary>Changelog Contents</summary>" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          echo "${{ steps.spinnaker-release-outputs.changelog }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.spinnaker-release-bom.outputs.changelog }}" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo "</details>" >> "$GITHUB_STEP_SUMMARY"
           echo "<details>" >> "$GITHUB_STEP_SUMMARY"
           echo "<summary>versions.yml Contents</summary>" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          echo "${{ steps.spinnaker-release-outputs.versions-yml }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.spinnaker-release-bom.outputs.versions-yml }}" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo "</details>" >> "$GITHUB_STEP_SUMMARY"

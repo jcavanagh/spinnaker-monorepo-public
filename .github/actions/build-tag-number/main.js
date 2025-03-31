@@ -126,6 +126,13 @@ function fetchBuildTags(opts, callback) {
 }
 
 function createBuildTags(opts, nextBuildNumber, callback) {
+    const skipTag = env['INPUT_SKIP-TAG'] === 'true';
+    if(skipTag) {
+        console.log("Skipping tag write, skip-tag is true")
+        callback(nextBuildNumber);
+        return;
+    }
+
     let newRefData = {
         ref:`refs/tags/${opts.finalTag}-${nextBuildNumber}`,
         sha: env.GITHUB_SHA

@@ -3,7 +3,32 @@ run-name: Deck ${{ github.ref_name }} (${{ github.event_name }})
 
 on:
   workflow_call:
+    inputs:
+      publish-containers:
+        description: Publish containers
+        default: true
+      publish-debs:
+        description: Publish debs
+        default: true
+      publish-npm:
+        description: Publish npm
+        default: true
+      version-override:
+        description: Overrides the version for artifacts (e.g. "1.37.1").  Otherwise, uses the auto-incrementing build number for the current branch.
+
   workflow_dispatch:
+    inputs:
+      publish-containers:
+        description: Publish containers
+        default: true
+      publish-debs:
+        description: Publish debs
+        default: true
+      publish-npm:
+        description: Publish npm
+        default: true
+      version-override:
+        description: Overrides the version for artifacts (e.g. "1.37.1").  Otherwise, uses the auto-incrementing build number for the current branch.
 
   push:
     branches:
@@ -28,7 +53,8 @@ jobs:
           project: deck
           docker-build-command: ':deck:webpack'
           publish: ${{ github.event_name != 'pull_request' }}
-          publish-npm: true
+          publish-npm: ${{ github.event_name != 'workflow_call' && true || inputs.publish-npm }}
+          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
           integration-test: false
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gar-json-key: ${{ secrets.GAR_JSON_KEY }}

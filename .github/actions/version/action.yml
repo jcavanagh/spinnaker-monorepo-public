@@ -3,15 +3,20 @@ description: Generates version information for Spinnaker builds
 author: jcavanagh
 
 inputs:
-  project:
+  namespace:
     description: Project to generate build version for
-    required: true
-  github-token:
-    description: Github token
     required: true
   skip-increment:
     description: If true, do not allow any incrementing of the version
     default: 'false'
+  skip-tag:
+    description: If true, will not write any tags to the repository.  Useful for finding what the next tag will be without committing to it.
+    default: 'false'
+  version-override:
+    description: If set, processes version, and outputs appropriate downstream outputs.  This overrides all other input values, including namespace - version overrides are only for releases, and the namespace will be forced to "spinnaker".
+  github-token:
+    description: Github token
+    required: true
 
 outputs:
   build-number:
@@ -50,13 +55,14 @@ runs:
     # Other artifacts (containers, debs) do not need to be published on every cycle, and use their event paths config.
     - name: Generate build version
       uses: ./.github/actions/build-tag-number
-      if: github.event_name != 'pull_request'
+      if: github.event_name != 'pull_request' && !inputs.version-override
       with:
         token: ${{ inputs.github-token }}
         suffix: ${{ format('{0}-{1}', inputs.project, github.ref_name) }}
         # Only push or workflow_dispatch events should increase the build number
         # Workflow re-runs should not increase the build number
         skip-increment: ${{ inputs.skip-increment == 'true' || github.run_attempt != '1' }}
+        skip-tag: ${{ inputs.skip-tag == 'true' }}
 
     # Output the version and its components for the caller to reference
     - name: Output build version
@@ -65,30 +71,57 @@ runs:
       run: |
         REF="${{ github.ref_name }}"
         
-        if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
-          # Default ref names for PRs are <number>/merge which doesn't play nice with things like Docker tags
-          REF=pr${{ github.event.number }}
-          BUILD_NUMBER=0
+        # If version-override is set, extract the values instead of using previous steps
+        if [[ -n '${{ inputs.version-override }}' ]]; then
+          # Split override string
+          IFS=. read -r -a SPLIT_VER <<< '${{ inputs.version-override }}'
+          SPLIT_VER_LEN="${#SPLIT_VER[@]}
+          
+          # Check override string validity
+          if [[ $SPLIT_VER_LEN != 3 ]]; then
+            echo "Invalid version override - must be in the form x.y.z"
+            exit 1
+          fi
+          
+          RELEASE_TRAIN="${SPLIT_VER[0]}${SPLIT_VER[1]}"
+          echo "release-train-suffixed=${RELEASE_TRAIN}.x" >> "$GITHUB_OUTPUT"
+          echo "release-train=$RELEASE_TRAIN" >> "$GITHUB_OUTPUT"
+          
+          BUILD_NUMBER="${SPLIT_VER[2]}"
+          echo "build-number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+          
+          # Note that this is dot-joined, unlike the autoincrement build numbers which are hyphen-joined
+          VERSION="${RELEASE_TRAIN}.${BUILD_NUMBER}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          
+          TAG="spinnaker-$REF-$VERSION"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        else
+          if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
+            # Default ref names for PRs are <number>/merge which doesn't play nice with things like Docker tags
+            REF=pr${{ github.event.number }}
+            BUILD_NUMBER=0
+          fi
+          
+          CLEAN_REF="${REF#release-}"
+          echo "release-train-suffixed=$CLEAN_REF" >> "$GITHUB_OUTPUT"
+          
+          RELEASE_TRAIN="${CLEAN_REF%.x}"
+          echo "build-number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "release-train=$RELEASE_TRAIN" >> "$GITHUB_OUTPUT"
+          
+          VERSION="$RELEASE_TRAIN-$BUILD_NUMBER"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          
+          TAG="${{ inputs.project }}-$REF-$BUILD_NUMBER"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
         fi
-        
-        CLEAN_REF="${REF#release-}"
-        echo "release-train-suffixed=$CLEAN_REF" >> "$GITHUB_OUTPUT"
-        
-        RELEASE_TRAIN="${CLEAN_REF%.x}"
-        echo "build-number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
-        echo "release-train=$RELEASE_TRAIN" >> "$GITHUB_OUTPUT"
-        
-        VERSION="$RELEASE_TRAIN-$BUILD_NUMBER"
-        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         
         IS_RELEASE="false"
         if [[ "$REF" =~ release-* ]]; then
           IS_RELEASE='true'
         fi
         echo "is-release=$IS_RELEASE" >> "$GITHUB_OUTPUT"
-        
-        TAG="${{ inputs.project }}-$REF-$BUILD_NUMBER"
-        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
         
         # Some things like NPM enforce semver-ish conventions
         if [[ "$IS_RELEASE" == 'true' ]]; then

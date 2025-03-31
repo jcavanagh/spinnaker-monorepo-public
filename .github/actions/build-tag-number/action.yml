@@ -19,6 +19,9 @@ inputs:
   skip-increment:
     description: If true, will output the most recent tag instead of incrementing
     required: false
+  skip-tag:
+    description: If true, will not write any tags to the repository.  Useful for finding what the next tag will be without committing to it.
+    required: false
 
 outputs:
   build_number:
