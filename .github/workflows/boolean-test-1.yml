@@ -1,5 +1,5 @@
 name: Boolean Test 1
-run-name: Boolean test (${{ inputs.bool-input }})
+run-name: Boolean test (${{ inputs.bool-input }} via ${{ github.event_name }})
 
 on:
   workflow_call:
@@ -16,10 +16,21 @@ on:
         type: boolean
         default: true
 
+  issue_comment:
+
 jobs:
   booleantest1:
     runs-on: ubuntu-latest
     steps:
+      - name: Runs if empty string
+        if: inputs.bool-input == ''
+        run: |
+          echo "Running because it was empty string"
+      - name: Runs if null
+        if: inputs.bool-input == null
+        run: |
+          echo "Running because it was null"
+
       - name: Runs if truthy
         if: inputs.bool-input
         run: |
