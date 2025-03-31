@@ -30,6 +30,8 @@ inputs:
     default: 'true'
   integration-test-build-command:
     description: Gradle command to run to prepare the container when running integration tests.  Defaults to `:<project>:<project>-web:installDist`.
+  docker-build-args:
+    description: Additional build args to provide to Docker
 
   # Publish args
   publish:
@@ -99,7 +101,9 @@ runs:
         file: ${{ inputs.project }}/Dockerfile.slim
         platforms: local
         load: true
-        build-args: ${{ inputs.build-args }}
+        build-args: ${{ inputs.docker-build-args }}
+        secrets: |
+          github_token=${{ inputs.github-token }}
         tags: |
           "${{ inputs.project }}-${{ steps.version.outputs.version }}-integration-test"
 
@@ -123,6 +127,7 @@ runs:
         build-command: ${{ inputs.docker-build-command }}
         push: ${{ github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-containers == 'true' }}
         gar-json-key: ${{ inputs.gar-json-key }}
+        github-token: ${{ inputs.github-token }}
 
     - name: Publish Debian packages
       if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-debs == 'true' && steps.version.outputs.is-release == 'false'
