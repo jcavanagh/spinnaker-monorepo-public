@@ -49,7 +49,7 @@ runs:
   steps:
     # Create an incrementing version number based on the branch and thing we are building
     # e.g. for any project doing a release on `main`, this would store a magic tag named
-    # bn-<project>-main-X, where X is the incrementing build number for that prefix.
+    # bn-<namespace>-main-X, where X is the incrementing build number for that prefix.
     # Publishing libraries all at once is required, as -bom packages will write the global version
     # into all composite dependencies - a partial publish will fail to resolve entirely.
     # Other artifacts (containers, debs) do not need to be published on every cycle, and use their event paths config.
@@ -58,7 +58,7 @@ runs:
       if: github.event_name != 'pull_request' && !inputs.version-override
       with:
         token: ${{ inputs.github-token }}
-        suffix: ${{ format('{0}-{1}', inputs.project, github.ref_name) }}
+        suffix: ${{ format('{0}-{1}', inputs.namespace, github.ref_name) }}
         # Only push or workflow_dispatch events should increase the build number
         # Workflow re-runs should not increase the build number
         skip-increment: ${{ inputs.skip-increment == 'true' || github.run_attempt != '1' }}
@@ -94,7 +94,7 @@ runs:
           VERSION="$RELEASE_TRAIN.$BUILD_NUMBER"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           
-          TAG="${{ inputs.project }}-$VERSION"
+          TAG="${{ inputs.namespace }}-$VERSION"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
         else
           if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
@@ -113,7 +113,7 @@ runs:
           VERSION="$RELEASE_TRAIN-$BUILD_NUMBER"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           
-          TAG="${{ inputs.project }}-$REF-$BUILD_NUMBER"
+          TAG="${{ inputs.namespace }}-$REF-$BUILD_NUMBER"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
         fi
         
