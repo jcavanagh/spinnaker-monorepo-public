@@ -4,6 +4,8 @@ author: jcavanagh
 
 inputs:
   # Build args
+  # Booleans are always strings in composite actions, unlike in workflow_call or workflow_dispatch inputs, where they are actual booleans
+  # See: https://github.com/actions/runner/issues/2238
   project:
     description: Project to build and (optionally) publish
     required: true
@@ -59,6 +61,7 @@ runs:
         namespace: ${{ inputs.project }}
         version-override: ${{ inputs.build-tag-override }}
         github-token: ${{ inputs.github-token }}
+        skip-tag: ${{ inputs.publish != 'true' }}
 
     # Always set up Java, for Gradle
     - uses: actions/setup-java@v4
