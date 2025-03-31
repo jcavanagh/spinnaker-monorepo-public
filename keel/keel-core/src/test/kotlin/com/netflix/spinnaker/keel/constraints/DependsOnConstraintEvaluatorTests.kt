@@ -47,10 +47,10 @@ internal class DependsOnConstraintEvaluatorTests : JUnit5Minutests {
     )
 
     val artifactRepository: ArtifactRepository = mockk(relaxUnitFun = true)
-    val actionRepository: ActionRepository = mockk() {
+    val actionRepository: ActionRepository = mockk(block = {
       every { allPassed(any(), any()) } returns true
       every { allStarted(any(), any()) } returns true
-    }
+    })
     val clock = MutableClock()
 
     val subject = DependsOnConstraintEvaluator(artifactRepository, actionRepository, mockk(), clock)

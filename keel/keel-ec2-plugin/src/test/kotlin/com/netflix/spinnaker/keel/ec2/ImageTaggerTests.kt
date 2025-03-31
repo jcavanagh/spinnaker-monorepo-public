@@ -52,9 +52,9 @@ class ImageTaggerTests : JUnit5Minutests {
         )
       } returns Task("123", "blah")
     }
-    private val springEnv: SpringEnv = mockk {
+    private val springEnv: SpringEnv = mockk( block = {
       every { getProperty("keel.image.tagging.enabled", Boolean::class.java, any()) } returns true
-    }
+    })
     val artifact = DebianArtifact(
       reference = "waffle",
       name = "waffle",
