@@ -33,7 +33,6 @@ jobs:
           fi
           
       - name: Generate next build tag without storing it
-        if: inputs.dry-run == 'false'
         uses: ./.github/actions/build-tag-number
         id: precondition-version
         with:
@@ -43,7 +42,6 @@ jobs:
           skip-tag: true
 
       - name: Verify expected release version
-        if: inputs.dry-run == 'false'
         run: |
           VERSION='${{ steps.precondition-version.outputs.version }}'
           USER_VERSION='${{ inputs.spinnaker-version }}'
@@ -181,7 +179,7 @@ jobs:
     # This requires some exhaustive logic, since a job that can be skipped won't satisfy a `needs`
     # https://github.com/actions/runner/issues/491
     if: |
-      always() &&
+      always() && inputs.dry-run == 'false' &&
       (needs.version.result == 'success') &&
       (needs.clouddriver.result == 'success' || needs.clouddriver.result == 'skipped') &&
       (needs.deck.result == 'success' || needs.deck.result == 'skipped') &&
