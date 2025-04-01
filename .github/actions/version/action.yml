@@ -74,8 +74,8 @@ runs:
       run: |
         REF="${{ github.ref_name }}"
         
-        # If version-override is set, extract the values instead of using previous steps
-        if [[ -n '${{ inputs.version-override }}' ]]; then
+        # If is-release is set (or a version-override downstream of that is set), extract the values instead of using previous steps
+        if [[ -n '${{ inputs.version-override }}' || '${{ inputs.is-release }}' == 'true' ]]; then
           # Split override string
           IFS=. read -r -a SPLIT_VER <<< '${{ inputs.version-override }}'
           SPLIT_VER_LEN="${#SPLIT_VER[@]}"
