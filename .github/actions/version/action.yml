@@ -75,7 +75,7 @@ runs:
         REF="${{ github.ref_name }}"
         
         # If is-release is set (or a version-override downstream of that is set), extract the values instead of using previous steps
-        if [[ -n '${{ inputs.version-override }}' || '${{ inputs.is-release }}' == 'true' ]]; then
+        if [[ -n '${{ inputs.version-override }}' || ]]; then
           # Split override string
           IFS=. read -r -a SPLIT_VER <<< '${{ inputs.version-override }}'
           SPLIT_VER_LEN="${#SPLIT_VER[@]}"
@@ -92,7 +92,7 @@ runs:
           
           BUILD_NUMBER="${SPLIT_VER[2]}"
           echo "build-number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
-          
+        
           # Note that this is dot-joined, unlike the autoincrement build numbers which are hyphen-joined
           VERSION="$RELEASE_TRAIN.$BUILD_NUMBER"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -113,11 +113,20 @@ runs:
           echo "build-number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
           echo "release-train=$RELEASE_TRAIN" >> "$GITHUB_OUTPUT"
           
-          VERSION="$CLEAN_REF-$BUILD_NUMBER"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          
-          TAG="${{ inputs.namespace }}-$CLEAN_REF-$BUILD_NUMBER"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [[ '${{ inputs.is-release }}' == 'true' ]]; then
+            # Note that this is dot-joined, unlike the autoincrement build numbers which are hyphen-joined
+            VERSION="$RELEASE_TRAIN.$BUILD_NUMBER"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        
+            TAG="${{ inputs.namespace }}-$VERSION"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          else
+            VERSION="$CLEAN_REF-$BUILD_NUMBER"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        
+            TAG="${{ inputs.namespace }}-$CLEAN_REF-$BUILD_NUMBER"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          fi
         fi
         
         echo "is-release=${{ inputs.is-release }}" >> "$GITHUB_OUTPUT"
