@@ -37,9 +37,10 @@ jobs:
         uses: ./.github/actions/version
         with:
           namespace: spinnaker
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          is-release: true
           skip-increment: ${{ github.run_attempt != '1' }}
           skip-tag: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify expected release version
         run: |
@@ -64,9 +65,10 @@ jobs:
         uses: ./.github/actions/version
         with:
           namespace: spinnaker
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          is-release: true
           skip-increment: ${{ github.run_attempt != '1' }}
           skip-tag: false
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
   clouddriver:
     if: inputs.dry-run == 'false'

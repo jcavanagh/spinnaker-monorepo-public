@@ -94,8 +94,8 @@ function fetchBuildTags(opts, callback) {
         let nextBuildNumber, tags;
 
         if (status === 404) {
-            console.log('No build-number ref available, starting at 1.');
-            nextBuildNumber = 1;
+            console.log('No build-number ref available, starting at 0.');
+            nextBuildNumber = 0;
             tags = [];
 
             callback(nextBuildNumber, nextBuildNumber, tags)

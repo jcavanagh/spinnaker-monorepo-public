@@ -6,8 +6,11 @@ inputs:
   namespace:
     description: Project to generate build version for
     required: true
+  is-release:
+    description: True if this is a specific versioned release, not an auto-incremented build
+    default: 'false'
   skip-increment:
-    description: If true, do not allow any incrementing of the version
+    description: If true, do not increment the build number - return the previous build number instead
     default: 'false'
   skip-tag:
     description: If true, will not write any tags to the repository.  Useful for finding what the next tag will be without committing to it.
@@ -35,7 +38,7 @@ outputs:
     description: Version, but always valid semver.  Shims non-release versions with a `0.0.0` prefix.
     value: ${{ steps.version.outputs.semver }}
   is-release:
-    description: true if ref is a release branch, false if not
+    description: True if this is a specific release version, not an auto-incremented build
     value: ${{ steps.version.outputs.is-release }}
   tag:
     description: The tag this run will create, e.g. `clouddriver-main.1` or `clouddriver-2023.1.1`
@@ -110,18 +113,14 @@ runs:
           echo "build-number=$BUILD_NUMBER" >> "$GITHUB_OUTPUT"
           echo "release-train=$RELEASE_TRAIN" >> "$GITHUB_OUTPUT"
           
-          VERSION="$RELEASE_TRAIN-$BUILD_NUMBER"
+          VERSION="$CLEAN_REF-$BUILD_NUMBER"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           
-          TAG="${{ inputs.namespace }}-$REF-$BUILD_NUMBER"
+          TAG="${{ inputs.namespace }}-$CLEAN_REF-$BUILD_NUMBER"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
         fi
         
-        IS_RELEASE="false"
-        if [[ "$REF" =~ release-* ]]; then
-          IS_RELEASE='true'
-        fi
-        echo "is-release=$IS_RELEASE" >> "$GITHUB_OUTPUT"
+        echo "is-release=${{ inputs.is-release }}" >> "$GITHUB_OUTPUT"
         
         # Some things like NPM enforce semver-ish conventions
         if [[ "$IS_RELEASE" == 'true' ]]; then
