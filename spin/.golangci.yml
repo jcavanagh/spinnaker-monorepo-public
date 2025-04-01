@@ -3,7 +3,7 @@ run:
   skip-dirs:
       - gateapi
 linters:
-  disable-all: true
+  default: none
   enable:
     - gofmt
     - goimports
