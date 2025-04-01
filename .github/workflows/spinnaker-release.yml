@@ -19,6 +19,10 @@ jobs:
   check-preconditions:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Exit if not on a release branch
         run: |
           REF="${{ github.ref_name }}"
@@ -53,13 +57,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-preconditions
     steps:
-    - id: version
-      uses: ./.github/actions/version
-      with:
-        namespace: spinnaker
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        skip-increment: ${{ github.run_attempt != '1' }}
-        skip-tag: ${{ inputs.dry-run != 'false' }}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: version
+        uses: ./.github/actions/version
+        with:
+          namespace: spinnaker
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-increment: ${{ github.run_attempt != '1' }}
+          skip-tag: ${{ inputs.dry-run != 'false' }}
 
   clouddriver:
     if: inputs.dry-run == 'false'
@@ -193,7 +201,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
 
       - name: Process Inputs
