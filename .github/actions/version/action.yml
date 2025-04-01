@@ -120,24 +120,22 @@ runs:
         
             TAG="${{ inputs.namespace }}-$VERSION"
             echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        
+            SEMVER="$VERSION"
+            echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
           else
             VERSION="$CLEAN_REF-$BUILD_NUMBER"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         
             TAG="${{ inputs.namespace }}-$CLEAN_REF-$BUILD_NUMBER"
             echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        
+            SEMVER="0.0.0-$VERSION"
+            echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
           fi
         fi
         
         echo "is-release=${{ inputs.is-release }}" >> "$GITHUB_OUTPUT"
-        
-        # Some things like NPM enforce semver-ish conventions
-        if [[ "$IS_RELEASE" == 'true' ]]; then
-          SEMVER="$RELEASE_TRAIN.$BUILD_NUMBER"
-        else
-          SEMVER="0.0.0-$VERSION"
-        fi
-        echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
         
         BUILD_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         echo "build-url=$BUILD_URL" >> "$GITHUB_OUTPUT"
