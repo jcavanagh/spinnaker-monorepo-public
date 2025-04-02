@@ -9,10 +9,12 @@ on:
         type: boolean
         default: true
       spinnaker-version:
-        description: The Spinnaker version to publish a BoM/changelog for.
+        description: The Spinnaker version to publish a BoM/changelog for
+        type: string
         required: true
       spinnaker-previous-version:
         description: Override the previous version used for changelog generation (picks the last patch version if unset)
+        type: string
       publish-bom:
         description: Publish BoM?
         type: boolean
@@ -33,10 +35,12 @@ on:
         type: boolean
         default: true
       spinnaker-version:
-        description: The Spinnaker version to publish a BoM/changelog for.
+        description: The Spinnaker version to publish a BoM/changelog for
+        type: string
         required: true
       spinnaker-previous-version:
         description: Override the previous version used for changelog generation (picks the last patch version if unset)
+        type: string
       publish-bom:
         description: Publish BoM?
         type: boolean
