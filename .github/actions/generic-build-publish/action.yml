@@ -59,7 +59,7 @@ runs:
       uses: ./.github/actions/version
       with:
         namespace: ${{ inputs.project }}
-        version-override: ${{ inputs.build-tag-override }}
+        version-override: ${{ inputs.version-override }}
         github-token: ${{ inputs.github-token }}
         skip-tag: ${{ inputs.publish != 'true' }}
 
