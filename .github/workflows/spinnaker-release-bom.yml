@@ -41,6 +41,10 @@ on:
         description: Publish changelog?
         type: boolean
         default: true
+      publish-github-release:
+        description: Publish Github release?
+        type: boolean
+        default: true
 
 jobs:
   spinnaker-release-bom:

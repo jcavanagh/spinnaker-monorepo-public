@@ -1,5 +1,5 @@
-name: Spinnaker Release
-run-name: Spinnaker Release (${{ inputs.spinnaker-version }})
+name: Spinnaker Full Release
+run-name: Spinnaker Full Release (${{ inputs.spinnaker-version }})
 
 on:
   workflow_dispatch:
