@@ -63328,13 +63328,7 @@ async function generate(version, previousVersion) {
         return line;
     });
     // Render changelog Markdown
-    let markdown = `---
-title: Spinnaker Release ${version}
-date: ${(0, dayjs_1.default)().format('YYYY-MM-DD HH:MM:SS +0000')}
-major_minor: ${parsed.major}.${parsed.minor}
-version: ${version}
----
-`;
+    let markdown = '';
     // Partition by severity of change
     let remainingLines = [...commits];
     const partitioned = partitions.map((part) => {
@@ -63385,19 +63379,28 @@ version: ${version}
     core.info(JSON.stringify(commits, null, 2));
     core.info('Changelog contents:');
     core.info(markdown);
-    return new Changelog(version, previousVersion, commits, markdown);
+    const markdownWithHeader = `---
+title: Spinnaker Release ${version}
+date: ${(0, dayjs_1.default)().format('YYYY-MM-DD HH:MM:SS +0000')}
+major_minor: ${parsed.major}.${parsed.minor}
+version: ${version}
+---
+` + markdown;
+    return new Changelog(version, previousVersion, commits, markdown, markdownWithHeader);
 }
 class Changelog {
     version;
     previousVersion;
     commits;
     markdown;
+    markdownWithHeader;
     prUrl;
-    constructor(version, previousVersion, commits, markdown) {
+    constructor(version, previousVersion, commits, markdown, markdownHeaderless) {
         this.version = version;
         this.previousVersion = previousVersion;
         this.commits = commits;
         this.markdown = markdown;
+        this.markdownWithHeader = markdownHeaderless;
         this.prUrl = '';
     }
     async publish() {
@@ -63419,7 +63422,7 @@ class Changelog {
         const branch = `auto-changelog-spinnaker-${this.version}`;
         git.gitCmd(`git checkout -b ${branch}`, { cwd: docsCwd });
         const docsRepoPathTarget = `${docsCwd}/content/en/changelogs/${this.version}-changelog.md`;
-        fs.writeFileSync(docsRepoPathTarget, this.markdown);
+        fs.writeFileSync(docsRepoPathTarget, this.markdownWithHeader);
         const commitMsg = `Automatic changelog for Spinnaker ${this.version}`;
         git.gitCmd(`git add --all`, { cwd: docsCwd });
         git.gitCmd(`git commit -a -m '${commitMsg}'`, { cwd: docsCwd });
