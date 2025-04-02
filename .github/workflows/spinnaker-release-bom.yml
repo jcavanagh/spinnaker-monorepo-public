@@ -1,5 +1,5 @@
-name: Spinnaker BoM/Changelog
-run-name: Spinnaker BoM/Changelog (${{ inputs.spinnaker-version }})
+name: Spinnaker BoM/Changelog/Github Release
+run-name: Spinnaker BoM/Changelog/Github (${{ inputs.spinnaker-version }})
 
 on:
   workflow_call:
@@ -17,6 +17,10 @@ on:
         default: true
       publish-changelog:
         description: Publish changelog?
+        type: boolean
+        default: true
+      publish-github-release:
+        description: Publish Github release?
         type: boolean
         default: true
 
@@ -57,7 +61,7 @@ jobs:
           publish-changelog: ${{ inputs.publish-changelog }}
 
       - name: Create Github release
-        if: inputs.dry-run == false
+        if: inputs.publish-github-release == true
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,7 +75,6 @@ jobs:
 
       - name: Summarize
         shell: bash
-        if: github.event_name != 'pull_request'
         run: |
           echo "### Release Info" >> "$GITHUB_STEP_SUMMARY"
           echo "| | |" >> "$GITHUB_STEP_SUMMARY"
