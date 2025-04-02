@@ -42,7 +42,7 @@ export abstract class Service {
   }
 
   getLastTag(): git.Tag | undefined {
-    return git.findTag(this.name, this.getBranch());
+    return git.findServiceTag(this.name, this.getBranch());
   }
 
   getVersion(): string {

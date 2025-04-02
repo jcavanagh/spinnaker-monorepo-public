@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as util from '../util';
 import * as uuid from 'uuid';
+import { parse } from 'yaml';
 
 const monorepo = util.getInput('monorepo-location');
 const docsRepo = util.getInput('docs-repo-location');
@@ -44,8 +45,17 @@ export async function forVersion(
       throw new Error(`Unable to parse version ${version}`);
     }
 
-    const previousPatch = Math.max(parsed.patch - 1, 0);
-    previousVersion = `${parsed.major}.${parsed.minor}.${previousPatch}`;
+    if(parsed.patch >= 1) {
+      const previousPatch = Math.max(parsed.patch - 1, 0);
+      previousVersion = `${parsed.major}.${parsed.minor}.${previousPatch}`;
+    } else {
+      // Find the latest patch tag for the previous minor
+      var previousReleaseTag = git.findTag(`spinnaker-release-${parsed.major}.${parsed.minor - 1}.`);
+      if(!previousReleaseTag) {
+        throw new Error(`Could not resolve previous release tag for current version ${version}`);
+      }
+      previousVersion = previousReleaseTag.name.slice('spinnaker-release-'.length);
+    }
   }
 
   return generate(version, previousVersion);
