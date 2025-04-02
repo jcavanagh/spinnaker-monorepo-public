@@ -11,6 +11,8 @@ on:
       spinnaker-version:
         description: The Spinnaker version to publish a BoM/changelog for.
         required: true
+      spinnaker-previous-version:
+        description: Override the previous version used for changelog generation (picks the last patch version if unset)
       publish-bom:
         description: Publish BoM?
         type: boolean
@@ -33,6 +35,8 @@ on:
       spinnaker-version:
         description: The Spinnaker version to publish a BoM/changelog for.
         required: true
+      spinnaker-previous-version:
+        description: Override the previous version used for changelog generation (picks the last patch version if unset)
       publish-bom:
         description: Publish BoM?
         type: boolean
@@ -60,6 +64,7 @@ jobs:
           github-pat: ${{ secrets.SPINNAKERBOT_PERSONAL_ACCESS_TOKEN }}
           credentials-json: ${{ secrets.GAR_JSON_KEY }}
           version: ${{ inputs.spinnaker-version }}
+          previous-version: ${{ inputs.previous-version }}
           add-to-versions-yml: ${{ inputs.add-to-versions-yml }}
           publish-bom: ${{ inputs.publish-bom }}
           publish-changelog: ${{ inputs.publish-changelog }}

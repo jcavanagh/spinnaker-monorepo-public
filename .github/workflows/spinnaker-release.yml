@@ -11,6 +11,8 @@ on:
       spinnaker-version:
         description: Confirm the Spinnaker version to publish.  This will be compared against the version computed by the release process, and will fail if they do not match.
         required: true
+      spinnaker-previous-version:
+        description: Override the previous version used for changelog generation (picks the last patch version if unset)
 
 jobs:
   check-preconditions:
@@ -164,3 +166,4 @@ jobs:
     with:
       add-to-versions-yml: ${{ inputs.add-to-versions-yml }}
       spinnaker-version: ${{ inputs.spinnaker-version }}
+      spinnaker-previous-version: ${{ inputs.spinnaker-previous-version }}
