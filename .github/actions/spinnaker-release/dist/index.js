@@ -63598,8 +63598,10 @@ class Service {
         return git.findTag(this.name, this.getBranch());
     }
     getVersion() {
+        const globalVersionOverride = util.getInput('version-override');
         const version = this.inputOverrides?.version ||
             this.overrides?.version ||
+            globalVersionOverride ||
             this.getLastTag()?.name;
         if (!version) {
             throw new Error(`Unable to resolve version for service ${this.name}`);
@@ -63615,6 +63617,7 @@ class Service {
         }
         return commit;
     }
+    // Overrides specified by service-specific inputs, which take priority over other global version overrides
     getInputOverrides() {
         const overridesInput = util.getInput('service-overrides');
         if (overridesInput) {

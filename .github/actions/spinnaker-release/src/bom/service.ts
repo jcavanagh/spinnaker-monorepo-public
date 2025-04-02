@@ -46,9 +46,11 @@ export abstract class Service {
   }
 
   getVersion(): string {
+    const globalVersionOverride = util.getInput('version-override');
     const version =
       this.inputOverrides?.version ||
       this.overrides?.version ||
+      globalVersionOverride ||
       this.getLastTag()?.name;
     if (!version) {
       throw new Error(`Unable to resolve version for service ${this.name}`);
@@ -67,6 +69,7 @@ export abstract class Service {
     return commit;
   }
 
+  // Overrides specified by service-specific inputs, which take priority over other global version overrides
   private getInputOverrides(): Overrides | undefined {
     const overridesInput: string = util.getInput('service-overrides');
 
