@@ -3,9 +3,10 @@
 # To test publishing, requires a GAR JSON credential at: "$HOME/monorepo/spinnaker-monorepo-test-gar.json"
 
 # Set action defaults
-export INPUT_MODE="${INPUT_MODE:-all}"
 export INPUT_DRY_RUN="${INPUT_DRY_RUN:-true}"
 export INPUT_ADD_TO_VERSIONS_YML="${INPUT_ADD_TO_VERSIONS_YML:-true}"
+export INPUT_PUBLISH_BOM="${INPUT_PUBLISH_BOM:-true}"
+export INPUT_PUBLISH_CHANGELOG="${INPUT_PUBLISH_CHANGELOG:-true}"
 CJSON_FILE_PATH="${CJSON_FILE_PATH:-$HOME/monorepo/spinnaker-monorepo-test-gar.json}"
 cjson=$(cat "$HOME/monorepo/spinnaker-monorepo-test-gar.json")
 export INPUT_CREDENTIALS_JSON="$cjson"

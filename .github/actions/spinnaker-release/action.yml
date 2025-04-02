@@ -7,10 +7,17 @@ runs:
   main: dist/index.js
 
 inputs:
-  mode:
-    description: Which tasks should be performed, one of `all`, `bom`, `versions.yml`
+  add-to-versions-yml:
+    description: Whether or not to add this BoM version to `versions.yml`
+    default: 'true'
+  publish-bom:
+    description: Publish BoM?
     required: true
-    default: 'all'
+    default: 'true'
+  publish-changelog:
+    description: Publish changelog?
+    required: true
+    default: 'true'
   dry-run:
     description: Whether or not to publish produced artifacts to the central releases repository
     default: 'true'
@@ -24,9 +31,6 @@ inputs:
     description: Previous BoM version to use as a comparison basis for changelogs.  Uses reasonable defaults if not provided.
   service-overrides:
     description: Comma-separated list of version overrides for services, e.g. `clouddriver:2023.3.1,orca:2023.3.2`
-  add-to-versions-yml:
-    description: Whether or not to add this BoM version to `versions.yml`
-    default: 'true'
 
   # Versions.yml configuration
   versions-yml-add:

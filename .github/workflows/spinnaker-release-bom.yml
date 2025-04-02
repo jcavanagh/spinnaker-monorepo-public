@@ -1,0 +1,103 @@
+name: Spinnaker BoM/Changelog
+run-name: Spinnaker BoM/Changelog (${{ inputs.spinnaker-version }})
+
+on:
+  workflow_call:
+    inputs:
+      add-to-versions-yml:
+        description: Add this version to `versions.yml` for Halyard?
+        type: boolean
+        default: true
+      spinnaker-version:
+        description: The Spinnaker version to publish a BoM/changelog for.
+        required: true
+      publish-bom:
+        description: Publish BoM?
+        type: boolean
+        default: true
+      publish-changelog:
+        description: Publish changelog?
+        type: boolean
+        default: true
+
+  workflow_dispatch:
+    inputs:
+      add-to-versions-yml:
+        description: Add this version to `versions.yml` for Halyard?
+        type: boolean
+        default: true
+      spinnaker-version:
+        description: The Spinnaker version to publish a BoM/changelog for.
+        required: true
+      publish-bom:
+        description: Publish BoM?
+        type: boolean
+        default: true
+      publish-changelog:
+        description: Publish changelog?
+        type: boolean
+        default: true
+
+jobs:
+  spinnaker-release-bom:
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Spinnaker release BoM and changelog
+        id: spinnaker-release-bom
+        uses: ./.github/actions/spinnaker-release
+        with:
+          github-pat: ${{ secrets.SPINNAKERBOT_PERSONAL_ACCESS_TOKEN }}
+          credentials-json: ${{ secrets.GAR_JSON_KEY }}
+          version: ${{ inputs.spinnaker-version }}
+          add-to-versions-yml: ${{ inputs.add-to-versions-yml }}
+          publish-bom: ${{ inputs.publish-bom }}
+          publish-changelog: ${{ inputs.publish-changelog }}
+
+      - name: Create Github release
+        if: inputs.dry-run == false
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: spinnaker-release-${{ inputs.spinnaker-version }}
+          release_name: Spinnaker ${{ inputs.spinnaker-version }}
+          body: |
+            ${{ steps.spinnaker-release-bom.outputs.changelog }}
+          draft: false
+          prerelease: false
+
+      - name: Summarize
+        shell: bash
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "### Release Info" >> "$GITHUB_STEP_SUMMARY"
+          echo "| | |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Version__ | ${{ inputs.spinnaker-version }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __BoM__ | ${{ steps.spinnaker-release-bom.outputs.bom-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __Changelog__ | ${{ steps.spinnaker-release-bom.outputs.bom-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| __versions.yml__ | ${{ steps.spinnaker-release-bom.outputs.versions-yml-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "<details>" >> "$GITHUB_STEP_SUMMARY"
+          echo "<summary>BoM Contents</summary>" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.spinnaker-release-bom.outputs.bom }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "</details>" >> "$GITHUB_STEP_SUMMARY"
+          echo "<details>" >> "$GITHUB_STEP_SUMMARY"
+          echo "<summary>Changelog Contents</summary>" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.spinnaker-release-bom.outputs.changelog }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "</details>" >> "$GITHUB_STEP_SUMMARY"
+          echo "<details>" >> "$GITHUB_STEP_SUMMARY"
+          echo "<summary>versions.yml Contents</summary>" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.spinnaker-release-bom.outputs.versions-yml }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "</details>" >> "$GITHUB_STEP_SUMMARY"
