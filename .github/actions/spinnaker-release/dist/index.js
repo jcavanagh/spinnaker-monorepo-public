@@ -63964,6 +63964,7 @@ const Path = __importStar(__nccwpck_require__(1017));
 const yaml_1 = __nccwpck_require__(4083);
 const stored_yml_1 = __nccwpck_require__(1479);
 const util = __importStar(__nccwpck_require__(2629));
+const core = __importStar(__nccwpck_require__(2186));
 function empty() {
     return new VersionsDotYml([], '', '', []);
 }
@@ -64023,7 +64024,8 @@ class VersionsDotYml extends stored_yml_1.StoredYml {
     addVersion(versionStr) {
         // Check to see if we already have an entry for this version - no duplicates should be allowed
         if (this.versions.map((it) => it.version).some((it) => it === versionStr)) {
-            throw new Error(`Version ${versionStr} already exists in versions.yml - cannot publish`);
+            core.info(`Version ${versionStr} already exists in versions.yml - not updating`);
+            return;
         }
         // Halyard requires semver-style versions - do not allow anything else to be published
         if (!this.isSemVer(versionStr)) {

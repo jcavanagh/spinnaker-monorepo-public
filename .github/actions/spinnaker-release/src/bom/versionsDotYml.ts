@@ -2,6 +2,7 @@ import * as Path from 'path';
 import { parse } from 'yaml';
 import { StoredYml } from '../gcp/stored_yml';
 import * as util from '../util';
+import * as core from '@actions/core';
 
 export interface IllegalVersion {
   reason: string;
@@ -92,9 +93,10 @@ export class VersionsDotYml extends StoredYml {
   addVersion(versionStr: string) {
     // Check to see if we already have an entry for this version - no duplicates should be allowed
     if (this.versions.map((it) => it.version).some((it) => it === versionStr)) {
-      throw new Error(
-        `Version ${versionStr} already exists in versions.yml - cannot publish`,
+      core.info(
+        `Version ${versionStr} already exists in versions.yml - not updating`,
       );
+      return;
     }
 
     // Halyard requires semver-style versions - do not allow anything else to be published
