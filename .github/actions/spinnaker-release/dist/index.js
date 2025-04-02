@@ -63392,11 +63392,13 @@ class Changelog {
     previousVersion;
     commits;
     markdown;
+    prUrl;
     constructor(version, previousVersion, commits, markdown) {
         this.version = version;
         this.previousVersion = previousVersion;
         this.commits = commits;
         this.markdown = markdown;
+        this.prUrl = '';
     }
     async publish() {
         const [owner, repo] = docsRepo.split('/', 2);
@@ -63428,13 +63430,15 @@ class Changelog {
             cwd: docsCwd,
         });
         // Create PR
-        return git.github.rest.pulls.create({
+        const pull = await git.github.rest.pulls.create({
             owner,
             repo,
             head: branch,
             base: 'master',
             title: commitMsg,
         });
+        this.prUrl = pull.data.html_url;
+        return pull;
     }
 }
 exports.Changelog = Changelog;
@@ -63479,9 +63483,24 @@ const util = __importStar(__nccwpck_require__(2629));
 const versionsDotYml_1 = __nccwpck_require__(7341);
 const changelog_1 = __nccwpck_require__(9173);
 async function generate() {
-    const bom = await generateBom();
-    const versionsYml = await generateVersionsYml();
-    const changelog = await generateChangelog();
+    const bom = await generateBom().catch((err) => {
+        core.error('Failed to generate BoM');
+        throw err;
+    });
+    const versionsYml = await generateVersionsYml().catch((err) => {
+        core.error('Failed to generate versions.yml');
+        throw err;
+    });
+    const changelog = await generateChangelog().catch((err) => {
+        core.error('Failed to generate changelog');
+        throw err;
+    });
+    core.setOutput('bom', bom.toString());
+    core.setOutput('bom-url', bom.getBucketFilePath());
+    core.setOutput('changelog', changelog.markdown);
+    core.setOutput('changelog-url', changelog.prUrl);
+    core.setOutput('versions-yml', versionsYml.toString());
+    core.setOutput('versions-yml-url', versionsYml.getBucketFilePath());
     core.info(`Generated BoM: \n${bom.toString()}`);
     core.info(`Generated versions.yml: \n${versionsYml.toString()}`);
     await publish(bom, versionsYml, changelog);
@@ -63511,32 +63530,26 @@ async function generateVersionsYml() {
     return versionsYml;
 }
 async function publish(bom, versionDotYml, changelog) {
-    const dryRun = util.getInput('dry-run');
-    if (dryRun == 'false') {
-        const publishBom = util.getInput('publish-bom');
-        if (publishBom == 'true') {
-            await bom.publish();
-        }
-        else {
-            core.info('Not publishing BoM - publish-bom is false');
-        }
-        const addToVersionsYml = util.getInput('add-to-versions-yml');
-        if (addToVersionsYml == 'true') {
-            await versionDotYml.publish();
-        }
-        else {
-            core.info('Not publishing versions.yml - add-to-versions-yml is false');
-        }
-        const publishChangelog = util.getInput('publish-changelog');
-        if (publishChangelog == 'true') {
-            await changelog.publish();
-        }
-        else {
-            core.info('Not publishing changelog - publish-changelog is false');
-        }
+    const publishBom = util.getInput('publish-bom');
+    if (publishBom == 'true') {
+        await bom.publish();
     }
     else {
-        core.info(`Not publishing - dry-run is ${dryRun}.  Set dry-run=false if you wish to publish.`);
+        core.info('Not publishing BoM - publish-bom is false');
+    }
+    const addToVersionsYml = util.getInput('add-to-versions-yml');
+    if (addToVersionsYml == 'true') {
+        await versionDotYml.publish();
+    }
+    else {
+        core.info('Not publishing versions.yml - add-to-versions-yml is false');
+    }
+    const publishChangelog = util.getInput('publish-changelog');
+    if (publishChangelog == 'true') {
+        await changelog.publish();
+    }
+    else {
+        core.info('Not publishing changelog - publish-changelog is false');
     }
 }
 

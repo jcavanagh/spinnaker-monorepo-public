@@ -18,9 +18,6 @@ inputs:
     description: Publish changelog?
     required: true
     default: 'true'
-  dry-run:
-    description: Whether or not to publish produced artifacts to the central releases repository
-    default: 'true'
 
   # BoM configuration
   version:
@@ -102,6 +99,10 @@ outputs:
     description: BoM contents
   bom-url:
     description: Link to published BoM
+  changelog:
+    description: Changelog contents
+  changelog-url:
+    description: Link to published changelog
   versions-yml:
     description: Contents of `versions.yml`
   versions-yml-url:

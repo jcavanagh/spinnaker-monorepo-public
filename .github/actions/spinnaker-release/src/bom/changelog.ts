@@ -5,7 +5,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as util from '../util';
 import * as uuid from 'uuid';
-import { parse } from 'yaml';
 
 const monorepo = util.getInput('monorepo-location');
 const docsRepo = util.getInput('docs-repo-location');
@@ -165,6 +164,7 @@ export class Changelog {
   previousVersion: string;
   commits: string[];
   markdown: string;
+  prUrl: string;
 
   constructor(
     version: string,
@@ -176,6 +176,7 @@ export class Changelog {
     this.previousVersion = previousVersion;
     this.commits = commits;
     this.markdown = markdown;
+    this.prUrl = '';
   }
 
   async publish() {
@@ -218,12 +219,14 @@ export class Changelog {
     });
 
     // Create PR
-    return git.github.rest.pulls.create({
+    const pull = await git.github.rest.pulls.create({
       owner,
       repo,
       head: branch,
       base: 'master',
       title: commitMsg,
     });
+    this.prUrl = pull.data.html_url;
+    return pull;
   }
 }
