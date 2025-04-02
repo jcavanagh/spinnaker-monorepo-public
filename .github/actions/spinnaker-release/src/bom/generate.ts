@@ -10,21 +10,25 @@ export async function generate(): Promise<void> {
     core.error('Failed to generate BoM');
     throw err;
   });
+
+  core.setOutput('bom', bom.toString());
+  core.setOutput('bom-url', bom.getBucketFilePath());
+
   const versionsYml = await generateVersionsYml().catch((err) => {
     core.error('Failed to generate versions.yml');
     throw err;
   });
+
+  core.setOutput('versions-yml', versionsYml.toString());
+  core.setOutput('versions-yml-url', versionsYml.getBucketFilePath());
+
   const changelog = await generateChangelog().catch((err) => {
     core.error('Failed to generate changelog');
     throw err;
   });
 
-  core.setOutput('bom', bom.toString());
-  core.setOutput('bom-url', bom.getBucketFilePath());
   core.setOutput('changelog', changelog.markdown);
   core.setOutput('changelog-url', changelog.prUrl);
-  core.setOutput('versions-yml', versionsYml.toString());
-  core.setOutput('versions-yml-url', versionsYml.getBucketFilePath());
 
   core.info(`Generated BoM: \n${bom.toString()}`);
   core.info(`Generated versions.yml: \n${versionsYml.toString()}`);

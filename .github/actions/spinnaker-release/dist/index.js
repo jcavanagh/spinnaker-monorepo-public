@@ -63429,6 +63429,22 @@ class Changelog {
         git.gitCmd(`git remote set-url origin https://github.com/${docsRepo}.git`, {
             cwd: docsCwd,
         });
+        // Check if PR already exists
+        const existingPrs = await git.github.rest.pulls.list({
+            owner,
+            repo,
+            head: branch,
+            base: 'master',
+        });
+        if (existingPrs.data.length > 0) {
+            // Close it
+            await git.github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: existingPrs.data[0].number,
+                state: 'closed',
+            });
+        }
         // Create PR
         const pull = await git.github.rest.pulls.create({
             owner,
@@ -63487,20 +63503,20 @@ async function generate() {
         core.error('Failed to generate BoM');
         throw err;
     });
+    core.setOutput('bom', bom.toString());
+    core.setOutput('bom-url', bom.getBucketFilePath());
     const versionsYml = await generateVersionsYml().catch((err) => {
         core.error('Failed to generate versions.yml');
         throw err;
     });
+    core.setOutput('versions-yml', versionsYml.toString());
+    core.setOutput('versions-yml-url', versionsYml.getBucketFilePath());
     const changelog = await generateChangelog().catch((err) => {
         core.error('Failed to generate changelog');
         throw err;
     });
-    core.setOutput('bom', bom.toString());
-    core.setOutput('bom-url', bom.getBucketFilePath());
     core.setOutput('changelog', changelog.markdown);
     core.setOutput('changelog-url', changelog.prUrl);
-    core.setOutput('versions-yml', versionsYml.toString());
-    core.setOutput('versions-yml-url', versionsYml.getBucketFilePath());
     core.info(`Generated BoM: \n${bom.toString()}`);
     core.info(`Generated versions.yml: \n${versionsYml.toString()}`);
     await publish(bom, versionsYml, changelog);

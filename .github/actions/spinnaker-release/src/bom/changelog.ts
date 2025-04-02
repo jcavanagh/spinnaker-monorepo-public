@@ -218,6 +218,24 @@ export class Changelog {
       cwd: docsCwd,
     });
 
+    // Check if PR already exists
+    const existingPrs = await git.github.rest.pulls.list({
+      owner,
+      repo,
+      head: branch,
+      base: 'master',
+    });
+
+    if (existingPrs.data.length > 0) {
+      // Close it
+      await git.github.rest.pulls.update({
+        owner,
+        repo,
+        pull_number: existingPrs.data[0].number,
+        state: 'closed',
+      });
+    }
+
     // Create PR
     const pull = await git.github.rest.pulls.create({
       owner,
