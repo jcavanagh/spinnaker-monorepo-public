@@ -39,15 +39,15 @@ export function changelogCommits(
   previousTag: string,
 ): Array<string> | undefined {
   // Default to HEAD if the current tag does not yet exist
+  const tagOrHead = parseTag(tag)?.name ?? 'HEAD';
   return gitCmdMulti(
-    `git log ${tag}...${previousTag} --oneline --no-abbrev-commit`,
+    `git log ${tagOrHead}...${previousTag} --oneline --no-abbrev-commit`,
   );
 }
 
 export function parseTag(name: string): Tag | undefined {
   const sha = gitCmd(`git rev-parse ${name}`);
   if (!sha) {
-    core.error(`Failed to resolve git tag ${name}`);
     return undefined;
   }
 
@@ -57,7 +57,10 @@ export function parseTag(name: string): Tag | undefined {
   };
 }
 
-export function findServiceTag(service: string, branch: string): Tag | undefined {
+export function findServiceTag(
+  service: string,
+  branch: string,
+): Tag | undefined {
   // Find the newest tag with the provided prefix, if exists, and parse it
   if (!service) {
     throw new Error(`Tag service must not be empty`);

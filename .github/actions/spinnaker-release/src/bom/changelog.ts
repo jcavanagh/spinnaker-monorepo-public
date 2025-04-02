@@ -45,16 +45,22 @@ export async function forVersion(
       throw new Error(`Unable to parse version ${version}`);
     }
 
-    if(parsed.patch >= 1) {
+    if (parsed.patch >= 1) {
       const previousPatch = Math.max(parsed.patch - 1, 0);
       previousVersion = `${parsed.major}.${parsed.minor}.${previousPatch}`;
     } else {
       // Find the latest patch tag for the previous minor
-      var previousReleaseTag = git.findTag(`spinnaker-release-${parsed.major}.${parsed.minor - 1}.`);
-      if(!previousReleaseTag) {
-        throw new Error(`Could not resolve previous release tag for current version ${version}`);
+      var previousReleaseTag = git.findTag(
+        `spinnaker-release-${parsed.major}.${parsed.minor - 1}.`,
+      );
+      if (!previousReleaseTag) {
+        throw new Error(
+          `Could not resolve previous release tag for current version ${version}`,
+        );
       }
-      previousVersion = previousReleaseTag.name.slice('spinnaker-release-'.length);
+      previousVersion = previousReleaseTag.name.slice(
+        'spinnaker-release-'.length,
+      );
     }
   }
 

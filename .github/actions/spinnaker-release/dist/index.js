@@ -63296,8 +63296,18 @@ async function forVersion(version, previousVersion) {
         if (!parsed) {
             throw new Error(`Unable to parse version ${version}`);
         }
-        const previousPatch = Math.max(parsed.patch - 1, 0);
-        previousVersion = `${parsed.major}.${parsed.minor}.${previousPatch}`;
+        if (parsed.patch >= 1) {
+            const previousPatch = Math.max(parsed.patch - 1, 0);
+            previousVersion = `${parsed.major}.${parsed.minor}.${previousPatch}`;
+        }
+        else {
+            // Find the latest patch tag for the previous minor
+            var previousReleaseTag = git.findTag(`spinnaker-release-${parsed.major}.${parsed.minor - 1}.`);
+            if (!previousReleaseTag) {
+                throw new Error(`Could not resolve previous release tag for current version ${version}`);
+            }
+            previousVersion = previousReleaseTag.name.slice('spinnaker-release-'.length);
+        }
     }
     return generate(version, previousVersion);
 }
@@ -63595,7 +63605,7 @@ class Service {
         }
     }
     getLastTag() {
-        return git.findTag(this.name, this.getBranch());
+        return git.findServiceTag(this.name, this.getBranch());
     }
     getVersion() {
         const globalVersionOverride = util.getInput('version-override');
@@ -64226,7 +64236,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findTag = exports.parseTag = exports.changelogCommits = exports.head = exports.gitCmdMulti = exports.gitCmd = exports.github = void 0;
+exports.findTag = exports.findServiceTag = exports.parseTag = exports.changelogCommits = exports.head = exports.gitCmdMulti = exports.gitCmd = exports.github = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 const github_1 = __nccwpck_require__(5438);
@@ -64255,13 +64265,14 @@ function head() {
 }
 exports.head = head;
 function changelogCommits(tag, previousTag) {
-    return gitCmdMulti(`git log ${tag}...${previousTag} --oneline --no-abbrev-commit`);
+    // Default to HEAD if the current tag does not yet exist
+    const tagOrHead = parseTag(tag)?.name ?? 'HEAD';
+    return gitCmdMulti(`git log ${tagOrHead}...${previousTag} --oneline --no-abbrev-commit`);
 }
 exports.changelogCommits = changelogCommits;
 function parseTag(name) {
     const sha = gitCmd(`git rev-parse ${name}`);
     if (!sha) {
-        core.error(`Failed to resolve git tag ${name}`);
         return undefined;
     }
     return {
@@ -64270,7 +64281,7 @@ function parseTag(name) {
     };
 }
 exports.parseTag = parseTag;
-function findTag(service, branch) {
+function findServiceTag(service, branch) {
     // Find the newest tag with the provided prefix, if exists, and parse it
     if (!service) {
         throw new Error(`Tag service must not be empty`);
@@ -64278,7 +64289,10 @@ function findTag(service, branch) {
     if (!branch) {
         throw new Error(`Tag branch must not be empty`);
     }
-    const prefix = `${service}-${branch}-`;
+    return findTag(`${service}-${branch}-`);
+}
+exports.findServiceTag = findServiceTag;
+function findTag(prefix) {
     const tags = gitCmdMulti(`git tag`)
         ?.filter((it) => it.startsWith(prefix))
         ?.filter((it) => {
