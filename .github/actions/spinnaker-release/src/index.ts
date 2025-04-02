@@ -1,13 +1,6 @@
-// import { generate } from './bom/generate';
-//
-// generate();
+import { generate } from './bom/generate';
 
-import * as util from './util';
-import { forVersion } from './bom/changelog';
-
-const version = util.getInput('version');
-const previousVersion = util.getInput('previous-version');
-forVersion(version, previousVersion).then((changelog) => {
-  console.log(changelog.markdown);
-  changelog.publish();
+generate().catch(() => {
+  // Don't continue the workflow if something threw in an async function
+  process.exitCode = 1;
 });

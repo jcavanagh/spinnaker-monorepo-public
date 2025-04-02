@@ -51,9 +51,26 @@ async function publish(
 ) {
   const dryRun: string = util.getInput('dry-run');
   if (dryRun == 'false') {
-    await bom.publish();
-    await versionDotYml.publish();
-    await changelog.publish();
+    const publishBom = util.getInput('publish-bom');
+    if (publishBom == 'true') {
+      await bom.publish();
+    } else {
+      core.info('Not publishing BoM - publish-bom is false');
+    }
+
+    const addToVersionsYml = util.getInput('add-to-versions-yml');
+    if (addToVersionsYml == 'true') {
+      await versionDotYml.publish();
+    } else {
+      core.info('Not publishing versions.yml - add-to-versions-yml is false');
+    }
+
+    const publishChangelog = util.getInput('publish-changelog');
+    if (publishChangelog == 'true') {
+      await changelog.publish();
+    } else {
+      core.info('Not publishing changelog - publish-changelog is false');
+    }
   } else {
     core.info(
       `Not publishing - dry-run is ${dryRun}.  Set dry-run=false if you wish to publish.`,

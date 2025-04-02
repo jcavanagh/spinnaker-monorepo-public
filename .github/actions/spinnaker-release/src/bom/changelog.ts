@@ -135,10 +135,10 @@ version: ${version}
     lines.forEach((line) => (markdown += `${line}\n`));
   }
 
-  core.info("Found commits:");
+  core.info('Found commits:');
   core.info(JSON.stringify(commits, null, 2));
 
-  core.info("Changelog contents:");
+  core.info('Changelog contents:');
   core.info(markdown);
 
   return new Changelog(version, previousVersion, commits, markdown);
