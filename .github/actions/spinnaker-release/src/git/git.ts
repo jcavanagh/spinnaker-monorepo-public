@@ -66,6 +66,11 @@ export function findServiceTag(
     throw new Error(`Tag service must not be empty`);
   }
 
+  // Trim the release-part off the branch, since that's not part of the tag
+  if (branch.startsWith('release-')) {
+    branch = branch.slice('release-'.length);
+  }
+
   if (!branch) {
     throw new Error(`Tag branch must not be empty`);
   }

@@ -64286,6 +64286,10 @@ function findServiceTag(service, branch) {
     if (!service) {
         throw new Error(`Tag service must not be empty`);
     }
+    // Trim the release-part off the branch, since that's not part of the tag
+    if (branch.startsWith('release-')) {
+        branch = branch.slice('release-'.length);
+    }
     if (!branch) {
         throw new Error(`Tag branch must not be empty`);
     }
@@ -64325,6 +64329,46 @@ function findTag(prefix) {
     };
 }
 exports.findTag = findTag;
+
+
+/***/ }),
+
+/***/ 6144:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const generate_1 = __nccwpck_require__(3674);
+const core = __importStar(__nccwpck_require__(2186));
+(0, generate_1.generate)().catch((reason) => {
+    // Don't continue the workflow if something threw in an async function
+    process.exitCode = 1;
+    core.error(reason);
+});
 
 
 /***/ }),
@@ -87277,21 +87321,12 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
-(() => {
-"use strict";
-var exports = __webpack_exports__;
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const generate_1 = __nccwpck_require__(3674);
-(0, generate_1.generate)().catch(() => {
-    // Don't continue the workflow if something threw in an async function
-    process.exitCode = 1;
-});
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(6144);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
