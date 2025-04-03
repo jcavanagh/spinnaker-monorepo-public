@@ -64,7 +64,7 @@ runs:
         suffix: ${{ format('{0}-{1}', inputs.namespace, github.ref_name) }}
         # Only push or workflow_dispatch events should increase the build number
         # Workflow re-runs should not increase the build number
-        skip-increment: ${{ inputs.skip-increment == 'true' || github.run_attempt != '1' }}
+        skip-increment: ${{ inputs.skip-increment == 'true' || inputs.skip-increment == true  || github.run_attempt != '1' }}
         skip-tag: ${{ inputs.skip-tag == 'true' }}
 
     # Output the version and its components for the caller to reference
