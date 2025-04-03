@@ -1,4 +1,4 @@
-name: zNew Branch Creation/Rebuild All
+name: Rebuild All/New Branch First Build
 run-name: ${{ github.event_name == 'workflow_dispatch' && format('Manual Rebuild All ({0})', github.ref_name) || format('New Branch Creation ({0})', github.ref_name) }}
 
 # There is an issue with push triggers where it does not trigger on new branches if there are path filters
