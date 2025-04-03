@@ -43,7 +43,7 @@ inputs:
     default: 'spinnaker-monorepo-test'
   bom-bucket-path:
     description: Path within the GCP bucket in which BoMs are stored
-    default: 'boms'
+    default: 'bom'
   versions-yml-bucket-path:
     description: Path within the GCP bucket at which Halyard's `versions.yml` lives
     default: ''
