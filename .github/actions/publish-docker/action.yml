@@ -109,6 +109,8 @@ runs:
         platforms: linux/amd64,linux/arm64
         push: ${{ inputs.push == 'true' }}
         build-args: ${{ inputs.build-args }}
+        secrets: |
+          github_token=${{ inputs.github-token }}
         tags: |
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}"
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-slim"
@@ -132,6 +134,8 @@ runs:
         platforms: linux/amd64,linux/arm64
         push: ${{ inputs.push == 'true' }}
         build-args: ${{ inputs.build-args }}
+        secrets: |
+          github_token=${{ inputs.github-token }}
         tags: |
           "${{ inputs.container-registry }}/${{ inputs.project }}:${{ inputs.version }}-ubuntu"
         labels: |
