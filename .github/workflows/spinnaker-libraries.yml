@@ -42,7 +42,7 @@ jobs:
         id: version
         with:
           namespace: spinnaker-libraries
-          version-override: ${{ github.event_name == 'workflow_call' && inputs.version-override || '' }}
+          version-override: ${{ inputs.version-override }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-java@v4

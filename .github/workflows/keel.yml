@@ -59,7 +59,7 @@ jobs:
           publish: ${{ github.event_name != 'pull_request' }}
           publish-containers: ${{ inputs.publish-containers != false }}
           publish-debs: ${{ inputs.publish-debs != false }}
-          version-override: ${{ inputs.version-override || '' }}
+          version-override: ${{ inputs.version-override }}
           publish-halconfig: false
           integration-test: false
           github-token: ${{ secrets.GITHUB_TOKEN }}
