@@ -87,7 +87,7 @@ runs:
             exit 1
           fi
           
-          RELEASE_TRAIN="${SPLIT_VER[0]}${SPLIT_VER[1]}"
+          RELEASE_TRAIN="${SPLIT_VER[0]}.${SPLIT_VER[1]}"
           echo "release-train-suffixed=$RELEASE_TRAIN.x" >> "$GITHUB_OUTPUT"
           echo "release-train=$RELEASE_TRAIN" >> "$GITHUB_OUTPUT"
           
