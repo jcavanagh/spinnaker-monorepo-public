@@ -64,8 +64,8 @@ jobs:
         with:
           namespace: spinnaker
           is-release: true
-          skip-increment: ${{ github.run_attempt != '1' }}
-          skip-tag: false
+          skip-increment: false
+          skip-tag: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   clouddriver:

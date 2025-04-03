@@ -58,7 +58,7 @@ runs:
     # Other artifacts (containers, debs) do not need to be published on every cycle, and use their event paths config.
     - name: Generate build version
       uses: ./.github/actions/build-tag-number
-      if: github.event_name != 'pull_request' && !inputs.version-override
+      if: github.event_name != 'pull_request' && inputs.version-override == ''
       with:
         token: ${{ inputs.github-token }}
         suffix: ${{ format('{0}-{1}', inputs.namespace, github.ref_name) }}
