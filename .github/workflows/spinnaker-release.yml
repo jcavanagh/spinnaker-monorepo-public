@@ -177,6 +177,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [version, clouddriver, deck, deck-kayenta, echo, fiat, front50, gate, halyard, igor, kayenta, keel, orca, rosco, spin, libs]
     steps:
+      - uses: actions/checkout@v4
       - name: Write release build tag
         uses: ./.github/actions/version
         with:
