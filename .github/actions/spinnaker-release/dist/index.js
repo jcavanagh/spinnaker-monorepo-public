@@ -64335,7 +64335,7 @@ function findServiceTag(service, branch) {
     if (!branch) {
         throw new Error(`Tag branch must not be empty`);
     }
-    return findTag(`${service}-${branch}-`);
+    return findTag(`${service}-${branch}`);
 }
 exports.findServiceTag = findServiceTag;
 function findTag(prefix) {
