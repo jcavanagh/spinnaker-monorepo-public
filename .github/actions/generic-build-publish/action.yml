@@ -128,7 +128,7 @@ runs:
       with:
         project: ${{ inputs.project }}
         version: ${{ steps.version.outputs.version }}
-        release-train: ${{ steps.version.outputs.release-train-suffixed }}
+        release-train: ${{ steps.version.outputs.release-train }}
         build-url: ${{ steps.version.outputs.build-url }}
         build-command: ${{ inputs.docker-build-command }}
         push: ${{ github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-containers == 'true' }}
