@@ -57,9 +57,8 @@ public class AuthenticatedRequestConfiguration {
             (request, next) ->
                 Mono.deferContextual(
                         context -> {
-                          Map<String, String> authenticationHeaders = context.get(KEY);
-                          ClientRequest authenticatedRequest =
-                              ClientRequest.from(request)
+                          Map<String, String> authenticationHeaders = context.get(KEY);ClientRequest authenticatedRequest =
+                    ClientRequest.from(request)
                                   .headers(httpHeaders -> httpHeaders.setAll(authenticationHeaders))
                                   .build();
                           return next.exchange(authenticatedRequest);
