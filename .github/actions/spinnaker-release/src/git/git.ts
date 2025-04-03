@@ -83,13 +83,24 @@ export function findServiceTag(
   return findTag(`${service}-${branch}`);
 }
 
+// Tag of the form <service>-<train>-<build_number>
+function isAutoIncrementTag(tag: string) {
+  const split = tag.split('-');
+  return split.length == 3 && !isNaN(parseInt(split.slice(-1)[0], 10));
+}
+
+// Tag of the form <service>-<release_version>
+function isReleaseTag(tag: string) {
+  const split = tag.split('-');
+  return split.length == 2 && !isNaN(parseInt(split.slice(-1)[0], 10));
+}
+
 export function findTag(prefix: string) {
   const tags = gitCmdMulti(`git tag`)
     ?.filter((it) => it.startsWith(prefix))
     ?.filter((it) => {
       // Ensure this matches standard tag format - all other tags should be disregarded
-      const split = it.split('-');
-      return split.length >= 3 && !isNaN(parseInt(split.slice(-1)[0], 10));
+      return isAutoIncrementTag(it) || isReleaseTag(it);
     })
     ?.sort((a, b) => {
       // Basic sorting fails beyond single-digit numbers, e.g. 10 < 2, so sort by parts
