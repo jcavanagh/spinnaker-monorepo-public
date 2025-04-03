@@ -7,18 +7,22 @@ on:
       project:
         description: Project to publish
         required: true
+        type: string
       version:
         description: The version to publish
         required: true
+        type: string
 
   workflow_dispatch:
     inputs:
       project:
         description: Project to publish
         required: true
+        type: string
       version:
         description: The version to publish
         required: true
+        type: string
 
 jobs:
   check-preconditions:
