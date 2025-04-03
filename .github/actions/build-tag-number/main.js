@@ -129,13 +129,6 @@ function fetchBuildTags(opts, callback) {
 }
 
 function createBuildTags(opts, nextBuildNumber, callback) {
-    const skipTag = env['INPUT_SKIP-TAG'] === 'true';
-    if(skipTag) {
-        console.log("Skipping tag write, skip-tag is true")
-        callback(nextBuildNumber);
-        return;
-    }
-
     let newRefData = {
         ref:`refs/tags/${opts.finalTag}-${nextBuildNumber}`,
         sha: env.GITHUB_SHA
@@ -183,6 +176,13 @@ function main() {
     }
 
     fetchBuildTags(opts, (currentBuildNumber, nextBuildNumber, tags) => {
+        const skipTag = env['INPUT_SKIP-TAG'] === 'true';
+        if(skipTag) {
+            console.log("Skipping tag write, skip-tag is true")
+            writeOutput(nextBuildNumber);
+            return;
+        }
+
         // If this is the first run, we should make the tag anyway
         if(skipIncrement && nextBuildNumber > 1) {
             console.log(`Returning existing build counter of ${currentBuildNumber}...`);
