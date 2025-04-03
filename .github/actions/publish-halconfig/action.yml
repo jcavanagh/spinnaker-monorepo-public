@@ -23,6 +23,15 @@ runs:
       with:
         credentials_json: ${{ inputs.gar-json-key }}
 
+    - name: Tar Packer templates for upload to GCS
+      if: inputs.project == 'rosco'
+      shell: bash
+      # Note, Halyard expects packer.tar.gz but doesn't actually gunzip it.
+      # Thus we must create a non-gzipped tar archive.
+      run: |
+        cd rosco/halconfig/packer
+        tar -cf ../packer.tar.gz *
+
     - name: Upload halconfig profiles to GCS
       # https://console.cloud.google.com/storage/browser/halconfig
       uses: google-github-actions/upload-cloud-storage@v2
