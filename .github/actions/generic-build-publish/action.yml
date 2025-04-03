@@ -136,7 +136,7 @@ runs:
         github-token: ${{ inputs.github-token }}
 
     - name: Publish Debian packages
-      if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-debs == 'true' && steps.version.outputs.is-release == 'false'
+      if: github.event_name != 'pull_request' && inputs.publish == 'true' && inputs.publish-debs == 'true' && steps.version.outputs.is-release == 'true'
       uses: ./.github/actions/publish-deb
       with:
         project: ${{ inputs.project }}
