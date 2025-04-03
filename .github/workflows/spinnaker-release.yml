@@ -172,19 +172,10 @@ jobs:
     with:
       version-override: ${{ needs.version.outputs.version }}
 
-  spinnaker-release-bom:
-    uses: ./.github/workflows/spinnaker-release-bom.yml
-    secrets: inherit
-    needs: [version, clouddriver, deck, deck-kayenta, echo, fiat, front50, gate, halyard, igor, kayenta, keel, orca, rosco, spin, libs]
-    with:
-      add-to-versions-yml: ${{ inputs.add-to-versions-yml }}
-      spinnaker-version: ${{ inputs.spinnaker-version }}
-      spinnaker-previous-version: ${{ inputs.spinnaker-previous-version }}
-
-  # Only push the actual build tag once we've completed the release, to allow re-runs
+  # Only push the actual build tag once we've completed the artifact builds
   write-build-tag:
     runs-on: ubuntu-latest
-    needs: spinnaker-release-bom
+    needs: [version, clouddriver, deck, deck-kayenta, echo, fiat, front50, gate, halyard, igor, kayenta, keel, orca, rosco, spin, libs]
     steps:
       - name: Write release build tag
         uses: ./.github/actions/version
@@ -194,3 +185,13 @@ jobs:
           skip-increment: false
           skip-tag: false
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  spinnaker-release-bom:
+    uses: ./.github/workflows/spinnaker-release-bom.yml
+    secrets: inherit
+    needs: write-build-tag
+    with:
+      add-to-versions-yml: ${{ inputs.add-to-versions-yml }}
+      spinnaker-version: ${{ inputs.spinnaker-version }}
+      spinnaker-previous-version: ${{ inputs.spinnaker-previous-version }}
