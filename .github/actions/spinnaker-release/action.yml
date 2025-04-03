@@ -57,7 +57,7 @@ inputs:
 #    default: https://us-apt.pkg.dev/projects/spinnaker-community
   as-docker-registry:
     description: Docker registry to write to artifactSources
-    default: https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
+    default: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
 #    default: us-docker.pkg.dev/spinnaker-community/docker
   as-git-prefix:
     description: Git prefix to write to artifactSources
@@ -65,7 +65,7 @@ inputs:
 #    default: https://github.com/spinnaker
   as-google-image-project:
     description: Google image project to write to artifactSources
-    default: https://us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
+    default: us-west2-docker.pkg.dev/spinnaker-monorepo-test/docker
 #    default: marketplace-spinnaker-release
 
   # Dependency defaults
