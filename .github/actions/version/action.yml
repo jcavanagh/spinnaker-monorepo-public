@@ -118,9 +118,6 @@ runs:
             VERSION="$RELEASE_TRAIN.$BUILD_NUMBER"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         
-            TAG="${{ inputs.namespace }}-$VERSION"
-            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-        
             SEMVER="$VERSION"
             echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
         
@@ -130,15 +127,15 @@ runs:
             VERSION="$RELEASE_TRAIN-$BUILD_NUMBER"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         
-            TAG="${{ inputs.namespace }}-$CLEAN_REF-$BUILD_NUMBER"
-            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-        
             SEMVER="0.0.0-$VERSION"
             echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
         
             IS_RELEASE=false
           fi
         fi
+        
+        TAG="${{ inputs.namespace }}-$VERSION"
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
         
         echo "is-release=$IS_RELEASE" >> "$GITHUB_OUTPUT"
         

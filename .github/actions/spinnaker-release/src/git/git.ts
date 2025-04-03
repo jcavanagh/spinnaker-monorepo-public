@@ -68,7 +68,12 @@ export function findServiceTag(
 
   // Trim the release-part off the branch, since that's not part of the tag
   if (branch.startsWith('release-')) {
-    branch = branch.slice('release-'.length);
+    branch = branch.slice(8);
+  }
+
+  // Same for the .x
+  if (branch.endsWith('.x')) {
+    branch = branch.slice(0, -2);
   }
 
   if (!branch) {
