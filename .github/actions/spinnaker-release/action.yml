@@ -28,6 +28,8 @@ inputs:
     description: Previous BoM version to use as a comparison basis for changelogs.  Uses reasonable defaults if not provided.
   service-overrides:
     description: Comma-separated list of version overrides for services, e.g. `clouddriver:2023.3.1,orca:2023.3.2`
+  allow-bom-overwrite:
+    description: If true, allows an existing BoM to be overwritten
 
   # Versions.yml configuration
   versions-yml-add:

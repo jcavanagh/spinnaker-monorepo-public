@@ -47,11 +47,18 @@ export abstract class Service {
 
   getVersion(): string {
     const globalVersionOverride = util.getInput('version-override');
-    const version =
+    let version =
       this.inputOverrides?.version ||
       this.overrides?.version ||
       globalVersionOverride ||
       this.getLastTag()?.name;
+
+    // Strip the service prefix if it's a tag
+    const tagPrefix = `${this.name}-`;
+    if (version?.startsWith(tagPrefix)) {
+      version = version.slice(tagPrefix.length);
+    }
+
     if (!version) {
       throw new Error(`Unable to resolve version for service ${this.name}`);
     }
