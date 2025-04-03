@@ -80,7 +80,7 @@ export function findServiceTag(
     throw new Error(`Tag branch must not be empty`);
   }
 
-  return findTag(`${service}-${branch}-`);
+  return findTag(`${service}-${branch}`);
 }
 
 export function findTag(prefix: string) {
