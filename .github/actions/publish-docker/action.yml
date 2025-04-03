@@ -76,6 +76,9 @@ runs:
       if: env.has-standard == 'true'
       uses: docker/build-push-action@v6
       id: docker-standard
+      env:
+        DOCKER_BUILD_SUMMARY: false
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: ${{ inputs.project }}
         file: ${{ inputs.project }}/Dockerfile
@@ -97,6 +100,9 @@ runs:
       if: env.has-slim == 'true'
       uses: docker/build-push-action@v6
       id: docker-slim
+      env:
+        DOCKER_BUILD_SUMMARY: false
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: ${{ inputs.project }}
         file: ${{ inputs.project }}/Dockerfile.slim
@@ -117,6 +123,9 @@ runs:
       if: env.has-ubuntu == 'true'
       uses: docker/build-push-action@v6
       id: docker-ubuntu
+      env:
+        DOCKER_BUILD_SUMMARY: false
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: ${{ inputs.project }}
         file: ${{ inputs.project }}/Dockerfile.ubuntu

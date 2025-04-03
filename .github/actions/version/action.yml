@@ -123,8 +123,11 @@ runs:
         
             SEMVER="$VERSION"
             echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
+        
+            IS_RELEASE=true
           else
-            VERSION="$CLEAN_REF-$BUILD_NUMBER"
+            # Versions by default do not include any '.x'-es, since so many systems do not like those
+            VERSION="$RELEASE_TRAIN-$BUILD_NUMBER"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         
             TAG="${{ inputs.namespace }}-$CLEAN_REF-$BUILD_NUMBER"
@@ -132,10 +135,12 @@ runs:
         
             SEMVER="0.0.0-$VERSION"
             echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
+        
+            IS_RELEASE=false
           fi
         fi
         
-        echo "is-release=${{ inputs.is-release }}" >> "$GITHUB_OUTPUT"
+        echo "is-release=$IS_RELEASE" >> "$GITHUB_OUTPUT"
         
         BUILD_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         echo "build-url=$BUILD_URL" >> "$GITHUB_OUTPUT"

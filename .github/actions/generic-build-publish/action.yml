@@ -99,6 +99,9 @@ runs:
     - name: Container Integration Tests (build)
       if: github.event_name == 'pull_request' && inputs.integration-test != 'false'
       uses: docker/build-push-action@v6
+      env:
+        DOCKER_BUILD_SUMMARY: false
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: ${{ inputs.project }}
         file: ${{ inputs.project }}/Dockerfile.slim
@@ -139,7 +142,6 @@ runs:
         project: ${{ inputs.project }}
         is-release: ${{ steps.version.outputs.is-release }}
         version: ${{ steps.version.outputs.version }}
-        build-number: ${{ steps.version.outputs.build-number }}
         gar-json-key: ${{ inputs.gar-json-key }}
 
     - name: Publish Halconfig

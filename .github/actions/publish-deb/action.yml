@@ -10,10 +10,7 @@ inputs:
     description: Whether this is a release build or not
     required: true
   version:
-    description: The version to publish
-    required: true
-  build-number:
-    description: The build number, used if not a release build
+    description: The release version to publish
     required: true
   gar-json-key:
     description: Google Artifact Registry JSON key
@@ -42,7 +39,7 @@ runs:
     - name: Publish apt packages to Google Artifact Registry
       env:
         # Deb versions are the release train and build number, e.g. main-1 or 1.35-1
-        ORG_GRADLE_PROJECT_version: ${{ inputs.is-release != 'true' && inputs.build-number || inputs.version }}
+        ORG_GRADLE_PROJECT_version: ${{ inputs.version }}
         ORG_GRADLE_PROJECT_artifactRegistryPublishEnabled: 'true'
         ORG_GRADLE_PROJECT_artifactRegistryPublishAptEnabled: 'true'
         ORG_GRADLE_PROJECT_artifactRegistryPublishMavenEnabled: 'false'
@@ -63,4 +60,4 @@ runs:
         echo "| | |" >> "$GITHUB_STEP_SUMMARY"
         echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
         echo "| __Name__ | ${{ inputs.project }}-${{ inputs.is-release != 'true' && 'dev' || '' }} |" >> "$GITHUB_STEP_SUMMARY"
-        echo "| __Version__ | ${{ inputs.is-release != 'true' && inputs.build-number || inputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
+        echo "| __Version__ | ${{ inputs.version }} |" >> "$GITHUB_STEP_SUMMARY"
