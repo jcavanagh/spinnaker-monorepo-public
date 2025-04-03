@@ -49,13 +49,19 @@ export async function forVersion(
       previousVersion = `${parsed.major}.${parsed.minor}.${previousPatch}`;
     } else {
       // Find the latest patch tag for the previous minor
-      var previousReleaseTag = git.findTag(
+      let previousReleaseTag = git.findTag(
         `spinnaker-release-${parsed.major}.${parsed.minor - 1}.`,
       );
       if (!previousReleaseTag) {
-        throw new Error(
-          `Could not resolve previous release tag for current version ${version}`,
+        // Try to find a tag for the previous major
+        previousReleaseTag = git.findTag(
+          `spinnaker-release-${parsed.major - 1}.`,
         );
+        if (!previousReleaseTag) {
+          throw new Error(
+            `Could not resolve previous release tag for current version ${version}`,
+          );
+        }
       }
       previousVersion = previousReleaseTag.name.slice(
         'spinnaker-release-'.length,
