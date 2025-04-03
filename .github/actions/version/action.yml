@@ -99,6 +99,8 @@ runs:
           
           TAG="${{ inputs.namespace }}-$VERSION"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        
+          IS_RELEASE=true
         else
           if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
             # Default ref names for PRs are <number>/merge which doesn't play nice with things like Docker tags
