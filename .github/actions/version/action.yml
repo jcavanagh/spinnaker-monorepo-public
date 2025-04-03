@@ -97,6 +97,9 @@ runs:
           # Note that this is dot-joined, unlike the autoincrement build numbers which are hyphen-joined
           VERSION="$RELEASE_TRAIN.$BUILD_NUMBER"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        
+          SEMVER="$VERSION"
+          echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
           
           TAG="${{ inputs.namespace }}-$VERSION"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"

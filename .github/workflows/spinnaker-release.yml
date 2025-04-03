@@ -41,6 +41,17 @@ jobs:
           skip-tag: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Exit if release tag for this version already exists
+        run: |
+          VERSION='${{ steps.precondition-version.outputs.version }}'
+          TAG="spinnaker-release-$VERSION"
+          
+          # Not sure how this could happen but you never know
+          if [ $(git tag -l "$TAG") ]; then
+            echo "Release tag $TAG already exists.  This is probably not the right version."
+            exit 1
+          fi
+
       - name: Verify expected release version
         run: |
           VERSION='${{ steps.precondition-version.outputs.version }}'
