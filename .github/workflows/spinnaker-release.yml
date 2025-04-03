@@ -73,91 +73,91 @@ jobs:
     uses: ./.github/workflows/clouddriver.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   deck:
     needs: version
     uses: ./.github/workflows/deck.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   deck-kayenta:
     needs: version
     uses: ./.github/workflows/deck-kayenta.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   echo:
     needs: version
     uses: ./.github/workflows/echo.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   fiat:
     needs: version
     uses: ./.github/workflows/fiat.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   front50:
     needs: version
     uses: ./.github/workflows/front50.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   gate:
     needs: version
     uses: ./.github/workflows/gate.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   halyard:
     needs: version
     uses: ./.github/workflows/halyard.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   igor:
     needs: version
     uses: ./.github/workflows/igor.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   kayenta:
     needs: version
     uses: ./.github/workflows/kayenta.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   keel:
     needs: version
     uses: ./.github/workflows/keel.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   orca:
     needs: version
     uses: ./.github/workflows/orca.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   rosco:
     needs: version
     uses: ./.github/workflows/rosco.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   spin:
     needs: version
     uses: ./.github/workflows/spin.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
   libs:
     needs: version
     uses: ./.github/workflows/spinnaker-libraries.yml
     secrets: inherit
     with:
-      version-override: ${{ needs.version.steps.version.outputs.version }}
+      version-override: ${{ needs.version.outputs.version }}
 
   spinnaker-release-bom:
     uses: ./.github/workflows/spinnaker-release-bom.yml

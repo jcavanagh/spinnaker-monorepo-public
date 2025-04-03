@@ -73,6 +73,7 @@ runs:
       shell: bash
       run: |
         REF="${{ github.ref_name }}"
+        IS_RELEASE='false'
         
         # If is-release is set (or a version-override downstream of that is set), extract the values instead of using previous steps
         if [[ -n '${{ inputs.version-override }}' ]]; then
@@ -100,7 +101,7 @@ runs:
           TAG="${{ inputs.namespace }}-$VERSION"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
         
-          IS_RELEASE=true
+          IS_RELEASE='true'
         else
           if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
             # Default ref names for PRs are <number>/merge which doesn't play nice with things like Docker tags
@@ -123,7 +124,7 @@ runs:
             SEMVER="$VERSION"
             echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
         
-            IS_RELEASE=true
+            IS_RELEASE='true'
           else
             # Versions by default do not include any '.x'-es, since so many systems do not like those
             VERSION="$RELEASE_TRAIN-$BUILD_NUMBER"
@@ -131,8 +132,6 @@ runs:
         
             SEMVER="0.0.0-$VERSION"
             echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
-        
-            IS_RELEASE=false
           fi
         fi
         
