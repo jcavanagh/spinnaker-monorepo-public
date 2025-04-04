@@ -41,8 +41,7 @@ public class CompositeCredentialsRepository<T extends Credentials> {
 
   public T getCredentials(String credentialsName, String type) {
     CredentialsRepository<? extends T> repository = allRepositories.get(type);
-    if (repository == null) {
-      throw new UnknownCredentialsTypeException("No credentials of type '" + type + "' found");
+    if (repository == null) {throw new UnknownCredentialsTypeException("No credentials of type '" + type + "' found");
     }
 
     T creds = repository.getOne(credentialsName);
