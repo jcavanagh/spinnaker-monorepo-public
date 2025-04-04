@@ -47,8 +47,7 @@ public class AwsComponents {
 
   @Bean
   @ConditionalOnProperty(value = "aws.metrics.enabled", matchIfMissing = true)
-  SpectatorMetricCollector spectatorMetricsCollector(Registry registry) {
-    SpectatorMetricCollector collector = new SpectatorMetricCollector(registry);
+  SpectatorMetricCollector spectatorMetricsCollector(Registry registry) {SpectatorMetricCollector collector = new SpectatorMetricCollector(registry);
     AwsSdkMetrics.setMetricCollector(collector);
     return collector;
   }
